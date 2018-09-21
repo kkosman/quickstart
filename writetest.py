@@ -20,6 +20,7 @@ SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
 # The ID and range of a sample spreadsheet.
 spreadsheet_id = '10PgzjEwEv8nA-6zc7d099h4i1qp035XBhp1DFkfFmjY'
 range_name = 'Light!A:B'
+status_range_name = 'Status!B1:B'
 periods_range_name = ['Light!A2:A','Periods!A2:C']
 value_input_option = 'USER_ENTERED'
 status = 'off'
@@ -56,6 +57,7 @@ def main(argv):
                                                 ranges=periods_range_name).execute()
 
     values = result.get('valueRanges', [])
+    current_date_time = datetime.now()
 
     if not values:
         print('No data found.')
@@ -69,7 +71,7 @@ def main(argv):
     for row in values[1].get('values'):
         a = datetime.strptime(row[0], time_format)
         b = datetime.strptime(row[1], time_format)
-        if a <= datetime.now() and b >= datetime.now():
+        if a <= current_date_time and b >= current_date_time:
             if status != row[2]:
                 status = row[2]
                 update_status = True
@@ -78,7 +80,7 @@ def main(argv):
 
     if update_status:
         # Call the Sheets API
-        values = [[ status, datetime.now().strftime(time_format) ]]
+        values = [[ status, current_date_time.strftime(time_format) ]]
         body = {'values': values}
 
         result = service.spreadsheets().values().append(spreadsheetId=spreadsheet_id, range=range_name,
@@ -87,6 +89,20 @@ def main(argv):
         print('{0} rows updated.'.format(result.get('updates').get('updatedRows')));
     else:
         print('No update required')
+
+    #update system status
+    values = [
+        [ current_date_time.strftime(time_format) ],
+        [ "?C" ],
+        [ "?%" ],
+        [ "n/d" ],
+        [ status ],
+        [ 'n/d' ]
+    ]
+    body = {'values': values}
+
+    result = service.spreadsheets().values().update(spreadsheetId=spreadsheet_id, range=status_range_name,
+        valueInputOption=value_input_option, body=body).execute()
 
 
 if __name__ == '__main__':
