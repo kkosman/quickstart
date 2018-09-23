@@ -11,7 +11,8 @@ import time
 import gpiozero
 
 # change this value based on which GPIO port the relay is connected to
-RELAY_PIN = 21
+# in 1,2,3,4 -> pin 12,16,20,21
+RELAY_PIN = 12
 
 # create a relay object.
 # Triggered by the output pin going low: active_high=False.
@@ -36,8 +37,7 @@ def toggle_relay():
 def main_loop():
     # start by turning the relay off
     set_relay(False)
-    while 1:
-        # then toggle the relay every second until the app closes
+    while True:
         toggle_relay()
         # wait a second 
         time.sleep(1)
