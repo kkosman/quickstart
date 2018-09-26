@@ -41,9 +41,7 @@ relay_in2 = Relay(16) # water
 # relay_in4 = Relay(21) # free slot
 
 def main(argv):
-    global light_status, pump_status, 
-            spreadsheet_id, debug, 
-            sleep_interval, pump_interval;
+    global light_status, pump_status, spreadsheet_id, debug, sleep_interval, pump_interval;
 
     # first check command line params
     try:
