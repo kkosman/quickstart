@@ -30,7 +30,7 @@ class Sensor:
 			GPIO.add_event_detect(self.__pin, GPIO.RISING)
 			GPIO.add_event_callback(self.__pin, self.callback)
 
-	def callback(self):
+	def callback(self, arg):
 	    self.cnt += 1
 
 	def measure(self):

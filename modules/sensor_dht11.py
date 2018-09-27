@@ -7,10 +7,10 @@ import time
 mockup = False
 try:
 	import RPi.GPIO as GPIO
-	from ..libs.DHT11 import dht11
+	from libs.DHT11 import dht11
 except ImportError:
     mockup = True
-    print("No RPi, working with mockup Sensor")
+    print("No RPi, working with mockup Sensor DHT11")
 
 
 class Sensor:
