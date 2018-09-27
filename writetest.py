@@ -28,6 +28,8 @@ pump_range_name = 'PumpPeriods!A:B'
 pump_done_range_name = 'PumpPeriods!B'
 status_range_name = 'Status!B1:B'
 periods_range_name = ['Light!A2:A','LightPeriods!A2:C']
+sensor_stats_range_name = 'SensorStats!A2:D'
+
 value_input_option = 'USER_ENTERED'
 light_status = 'off'
 pump_status = 'off'
@@ -165,7 +167,7 @@ def main(argv):
     ### Temp / humi sensor
     dht11_sensor_value = sensor_dht11.measure()
 
-    #update system status
+    # update system status
     values = [
         [ current_date_time.strftime(time_format) ],
         [ dht11_sensor_value[0] ],
@@ -177,6 +179,18 @@ def main(argv):
     body = {'values': values}
 
     result = service.spreadsheets().values().update(spreadsheetId=spreadsheet_id, range=status_range_name,
+        valueInputOption=value_input_option, body=body).execute()
+
+    # update sensor stats
+    values = [
+        [current_date_time.strftime(time_format) ,
+        dht11_sensor_value[0] ,
+        dht11_sensor_value[1] ,
+        light_sensor_value]
+    ]
+    body = {'values': values}
+
+    result = service.spreadsheets().values().append(spreadsheetId=spreadsheet_id, range=sensor_stats_range_name,
         valueInputOption=value_input_option, body=body).execute()
 
 
