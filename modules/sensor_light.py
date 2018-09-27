@@ -51,7 +51,11 @@ class Sensor:
 
 			self.oldcnt = self.t
 			time.sleep(1)
-		value = reduce(lambda x, y: x + y, self.array_hz) / len(self.array_hz)
-		print(value)
+			
+		if len(self.array_hz) > 1:
+			value = reduce(lambda x, y: x + y, self.array_hz) / len(self.array_hz)
+			print(value)
 
-		return value;
+			return value
+		else:
+			return False

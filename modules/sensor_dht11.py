@@ -38,7 +38,7 @@ class Sensor:
 		x = 0
 		self.array_temp = []
 		self.array_humi = []
-		while x < 3:
+		while x < 5:
 			x += 1
 			result = self.instance.read()
 
@@ -50,10 +50,10 @@ class Sensor:
 			else:
 				print("Error: %d" % result.error_code)
 
-			time.sleep(10)
+			time.sleep(6)
 
-		value_temp = reduce(lambda x, y: x + y, self.array_temp) / len(self.array_temp)
-		value_humi = reduce(lambda x, y: x + y, self.array_humi) / len(self.array_humi)
+		value_temp = reduce(lambda x, y: x + y, self.array_temp) / len(self.array_temp) if len(self.array_temp) > 1 else False
+		value_humi = reduce(lambda x, y: x + y, self.array_humi) / len(self.array_humi) if len(self.array_humi) > 1 else False
 		print(value_temp, value_humi)
 
 		return [value_temp, value_humi];
