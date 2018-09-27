@@ -168,8 +168,8 @@ def main(argv):
     #update system status
     values = [
         [ current_date_time.strftime(time_format) ],
-        [ str(dht11_sensor_value[0]) + "C" ],
-        [ str(dht11_sensor_value[1]) + "%" ],
+        [ dht11_sensor_value[0] ],
+        [ dht11_sensor_value[1] ],
         [ light_sensor_value ],
         [ light_status ],
         [ pump_status.strftime(time_format) if type(pump_status) is datetime else pump_status]
