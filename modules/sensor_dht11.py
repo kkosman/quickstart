@@ -43,9 +43,9 @@ class Sensor:
 
 			if result.is_valid():
 				print("Temperature: %d C" % result.temperature)
-				self.array_temp.push(result.temperature)
+				self.array_temp.append(result.temperature)
 				print("Humidity: %d %%" % result.humidity)
-				self.array_humi.push(result.humidity)
+				self.array_humi.append(result.humidity)
 			else:
 				print("Error: %d" % result.error_code)
 

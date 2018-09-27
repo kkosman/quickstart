@@ -45,7 +45,7 @@ class Sensor:
 			hz = self.t - self.oldcnt
 
 			print("FREQ: " + str(hz) + "\t = " + str((hz+50)/100) + " mW/m2")
-			self.array_hz.push(hz)
+			self.array_hz.append(hz)
 
 			self.oldcnt = self.t
 			sleep(1)
