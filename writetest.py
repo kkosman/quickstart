@@ -10,7 +10,7 @@ from time import sleep
 from os import path
 import sys, getopt
 
-from modules.relay import Relay
+from modules import relay, sensor_light, sensor_dht11
 
 
 cwd = path.realpath(__file__)
@@ -34,11 +34,16 @@ pump_status = 'off'
 time_format = "%y/%m/%d %H:%M:%S"
 debug = False
 
-# in 1,2,3,4 -> pin 12,16,20,21
-relay_in1 = Relay(12) # light
-relay_in2 = Relay(16) # water
+# IN 1,2,3,4 -> PIN 12,16,20,21
+relay_in1 = relay.Relay(12) # light
+relay_in2 = relay.Relay(16) # water
 # relay_in3 = Relay(20) # free slot
 # relay_in4 = Relay(21) # free slot
+
+# PIN 18
+sensor_light = sensor_light.Sensor(18) # light / color sensor
+# PIN 17
+sensor_dht11 = sensor_dht11.Sensor(17) # temp / humi sensor
 
 def main(argv):
     global light_status, pump_status, spreadsheet_id, debug, sleep_interval, pump_interval;
@@ -154,12 +159,18 @@ def main(argv):
         else:
             print('Pump: nothing to do, still watering')
 
+    ### Light sensor
+    light_sensor_value = sensor_light.measure()
+
+    ### Temp / humi sensor
+    dht11_sensor_value = sensor_dht11.measure()
+
     #update system status
     values = [
         [ current_date_time.strftime(time_format) ],
-        [ "?C" ],
-        [ "?%" ],
-        [ "n/d" ],
+        [ str(dht11_sensor_value[0]) + "C" ],
+        [ str(dht11_sensor_value[1]) + "%" ],
+        [ light_sensor_value ],
         [ light_status ],
         [ pump_status.strftime(time_format) if type(pump_status) is datetime else pump_status]
     ]
