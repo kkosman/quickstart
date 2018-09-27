@@ -3,6 +3,7 @@
 
 import sys
 import time
+from functools import reduce
 
 mockup = False
 try:
@@ -45,10 +46,11 @@ class Sensor:
 			hz = self.t - self.oldcnt
 
 			print("FREQ: " + str(hz) + "\t = " + str((hz+50)/100) + " mW/m2")
-			self.array_hz.append(hz)
+                        if x > 1:
+                            self.array_hz.append(hz)
 
 			self.oldcnt = self.t
-			sleep(1)
+			time.sleep(1)
 		value = reduce(lambda x, y: x + y, self.array_hz) / len(self.array_hz)
 		print(value)
 

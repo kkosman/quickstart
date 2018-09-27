@@ -3,6 +3,7 @@
 
 import sys
 import time
+from functools import reduce
 
 mockup = False
 try:
@@ -37,7 +38,7 @@ class Sensor:
 		x = 0
 		self.array_temp = []
 		self.array_humi = []
-		while x < 10:
+		while x < 3:
 			x += 1
 			result = self.instance.read()
 
@@ -49,7 +50,7 @@ class Sensor:
 			else:
 				print("Error: %d" % result.error_code)
 
-			sleep(10)
+			time.sleep(10)
 
 		value_temp = reduce(lambda x, y: x + y, self.array_temp) / len(self.array_temp)
 		value_humi = reduce(lambda x, y: x + y, self.array_humi) / len(self.array_humi)
