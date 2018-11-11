@@ -11,7 +11,9 @@ from os import path
 import sys, getopt
 
 from modules import relay, sensor_light, sensor_dht11
-
+from sqldata import Measure
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
 
 cwd = path.realpath(__file__)
 cwd = path.dirname(cwd)
@@ -74,6 +76,12 @@ def main(argv):
         flow = client.flow_from_clientsecrets(cwd+'/credentials.json', SCOPES)
         creds = tools.run_flow(flow, store)
     service = build('sheets', 'v4', http=creds.authorize(Http()))
+
+
+    # connect to sql DB
+    engine = create_engine('mysql://kosmani2_wine:FwzsfV1q@kosman.com.pl/kosmani2_wine')
+    Session = sessionmaker(bind=engine)
+    session = Session()    
 
     current_date_time = datetime.now()
 
@@ -182,16 +190,10 @@ def main(argv):
         valueInputOption=value_input_option, body=body).execute()
 
     # update sensor stats
-    values = [
-        [current_date_time.strftime(time_format) ,
-        dht11_sensor_value[0] ,
-        dht11_sensor_value[1] ,
-        light_sensor_value]
-    ]
-    body = {'values': values}
 
-    result = service.spreadsheets().values().append(spreadsheetId=spreadsheet_id, range=sensor_stats_range_name,
-        valueInputOption=value_input_option, body=body).execute()
+    measure = Measure(date=current_date_time, temperature=dht11_sensor_value[0], humidity=dht11_sensor_value[1], light=light_sensor_value)
+    session.add(measure)
+    session.commit()
 
 
 if __name__ == '__main__':
