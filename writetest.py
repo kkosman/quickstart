@@ -79,7 +79,9 @@ def main(argv):
 
 
     # connect to sql DB
-    engine = create_engine('mysql://kosmani2_wine:FwzsfV1q@kosman.com.pl/kosmani2_wine')
+    with open(cwd+'/db.conf') as f:
+        db_conf = f.read()
+    engine = create_engine(db_conf)
     Session = sessionmaker(bind=engine)
     session = Session()    
 
