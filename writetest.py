@@ -12,6 +12,7 @@ import sys, getopt
 
 from modules import relay, sensor_light, sensor_dht11
 from sqldata import Measure
+from fourseasons import fourseasons
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 
@@ -87,47 +88,12 @@ def main(argv):
 
     current_date_time = datetime.now()
 
-    ### Light status
+    ### Light status update
 
-    # Read periods and override status
-    result = service.spreadsheets().values().batchGet(spreadsheetId=spreadsheet_id,
-                                                ranges=periods_range_name).execute()
-    values = result.get('valueRanges', [])
+    light_status = fourseasons.is_it_night_or_day(current_date_time)
+    # Send status to the relay
+    relay_in1.set(light_status == "day")
 
-    if not values:
-        print('No data found.')
-        sys.exit()
-
-    values_tmp = values[0].get('values')
-    if values_tmp:
-        light_status = values_tmp[-1][-1]
-
-    update_status = False
-    for row in values[1].get('values'):
-        a = datetime.strptime(row[0], time_format)
-        b = datetime.strptime(row[1], time_format)
-        if a <= current_date_time and b >= current_date_time:
-            if light_status != row[2]:
-                light_status = row[2]
-                update_status = True
-                break
-
-
-    if update_status:
-        # Send status to the relay
-        relay_in1.set(light_status == "on")
-
-
-        # Call the Sheets API
-        values = [[ light_status, current_date_time.strftime(time_format) ]]
-        body = {'values': values}
-
-        result = service.spreadsheets().values().append(spreadsheetId=spreadsheet_id, range=light_range_name,
-            valueInputOption=value_input_option, body=body).execute()
-
-        print('Light: {0} rows updated.'.format(result.get('updates').get('updatedRows')));
-    else:
-        print('Light: No update required')
 
     ### Pump status
     if pump_status == "off":

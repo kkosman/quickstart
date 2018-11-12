@@ -23,14 +23,18 @@ class Measure(Base):
  
 # Create an engine that stores data in the local directory's
 # sqlalchemy_example.db file.
-with open('db.conf') as f:
-    db_conf = f.read()
-    
-engine = create_engine(db_conf)
 
-# Create all tables in the engine. This is equivalent to "Create Table"
-# statements in raw SQL.
-Base.metadata.create_all(engine)
+try: 
+    with open('db.conf') as f:
+        db_conf = f.read()
+        
+    engine = create_engine(db_conf)
+
+    # Create all tables in the engine. This is equivalent to "Create Table"
+    # statements in raw SQL.
+    Base.metadata.create_all(engine)
+except:
+    print("Failed to initialize db, nothing to worry")
 
 # Session = sessionmaker(bind=engine)
 # session = Session()
