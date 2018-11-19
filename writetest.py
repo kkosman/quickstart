@@ -64,7 +64,22 @@ def main(argv):
     current_date_time = datetime.now()
 
     # Get status from a file
-    status_dict = json.loads(open(cwd + '/status.json','r').read())
+    try:
+        status_file = open(cwd + '/status.json','r')
+        status_dict = json.loads(status_file.read())
+    except Exception as e:
+        status_dict = {
+            'is_watering': False,
+            'last_water': (current_date_time - timedelta(minutes=100)).strftime(time_format)
+        }
+
+        status_file = open(cwd + '/status.json','w')
+        status_file.write(json.dumps(status_dict))
+        status_file.truncate()
+        status_file.close()
+
+        print("Trying to create a new status file. Exception: ", e)
+    
     pump_status = datetime.strptime(status_dict['last_water'], time_format)
 
 
@@ -90,7 +105,10 @@ def main(argv):
     relay_in1.set(light_status == "day")
 
 
-    open(cwd + '/status.json','w').write(json.dumps(status_dict))
+    status_file = open(cwd + '/status.json','w')
+    status_file.write(json.dumps(status_dict))
+    status_file.truncate()
+    status_file.close()
 
 
     ### Light sensor
