@@ -1,9 +1,6 @@
 #!/usr/bin/python3
 
 from __future__ import print_function
-from googleapiclient.discovery import build
-from httplib2 import Http
-from oauth2client import file, client, tools
 from datetime import datetime, timedelta
 
 from time import sleep
@@ -16,28 +13,21 @@ from fourseasons import fourseasons
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 
+import json
+
+
 cwd = path.realpath(__file__)
 cwd = path.dirname(cwd)
 
 sleep_interval = 60 # seconds
-pump_interval = 60 # seconds
-# If modifying these scopes, delete the file token.json.
-SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
-#1h8LiPEk6veikU26rA7VLptVBEJdhJyhRdL5Ft7kK1KE
-# The ID and range of a sample spreadsheet.
-spreadsheet_id = '10PgzjEwEv8nA-6zc7d099h4i1qp035XBhp1DFkfFmjY'
-light_range_name = 'Light!A:B'
-pump_range_name = 'PumpPeriods!A:B'
-pump_done_range_name = 'PumpPeriods!B'
-status_range_name = 'Status!B1:B'
-periods_range_name = ['Light!A2:A','LightPeriods!A2:C']
-sensor_stats_range_name = 'SensorStats!A2:D'
-
-value_input_option = 'USER_ENTERED'
+pump_interval = 60 # minutes
+water_duration = 60 # seconds
 light_status = 'off'
 pump_status = 'off'
 time_format = "%y/%m/%d %H:%M:%S"
 debug = False
+
+spreadsheet_id = '10PgzjEwEv8nA-6zc7d099h4i1qp035XBhp1DFkfFmjY'
 
 # IN 1,2,3,4 -> PIN 12,16,20,21
 relay_in1 = relay.Relay(12) # light
@@ -51,7 +41,7 @@ sensor_light = sensor_light.Sensor(18) # light / color sensor
 sensor_dht11 = sensor_dht11.Sensor(17) # temp / humi sensor
 
 def main(argv):
-    global light_status, pump_status, spreadsheet_id, debug, sleep_interval, pump_interval;
+    global light_status, pump_status, spreadsheet_id, debug, sleep_interval, pump_interval, water_duration;
 
     # first check command line params
     try:
@@ -66,102 +56,65 @@ def main(argv):
         elif opt in ("-d", "--debug"):
             # set test values
             sleep_interval = 10 # seconds
-            pump_interval = 30 # seconds
+            pump_interval = 1 # minutes
+            water_duration = 30 # seconds
             debug = True
             spreadsheet_id = '1h8LiPEk6veikU26rA7VLptVBEJdhJyhRdL5Ft7kK1KE'
 
-    # authorize to google api
-    store = file.Storage(cwd+'/token.json')
-    creds = store.get()
-    if not creds or creds.invalid:
-        flow = client.flow_from_clientsecrets(cwd+'/credentials.json', SCOPES)
-        creds = tools.run_flow(flow, store)
-    service = build('sheets', 'v4', http=creds.authorize(Http()))
-
-
-    # connect to sql DB
-    with open(cwd+'/db.conf') as f:
-        db_conf = f.read()
-    engine = create_engine(db_conf)
-    Session = sessionmaker(bind=engine)
-    session = Session()    
-
     current_date_time = datetime.now()
 
-    ### Light status update
+    # Get status from a file
+    status_dict = json.loads(open(cwd + '/status.json','r').read())
+    pump_status = datetime.strptime(status_dict['last_water'], time_format)
 
+
+    # Process if we should water
+    if status_dict['is_watering'] and pump_status < current_date_time - timedelta(seconds=water_duration): # we should stop watering
+        status_dict['is_watering'] = False
+        relay_in2.set(False)
+        print("Watering: stop",pump_status, current_date_time - timedelta(seconds=water_duration))
+
+    elif not status_dict['is_watering'] and pump_status < current_date_time - timedelta(minutes=pump_interval): # we should start watering
+        status_dict['last_water'] = current_date_time.strftime(time_format)
+        status_dict['is_watering'] = True
+        relay_in2.set(True)
+        print("Watering: start",pump_status, current_date_time - timedelta(minutes=pump_interval))
+
+    else: # nothing to do
+        print("Watering: nothing to change")
+
+
+    ### Light status update
     light_status = fourseasons.is_it_night_or_day(current_date_time)
     # Send status to the relay
     relay_in1.set(light_status == "day")
 
 
-    ### Pump status
-    if pump_status == "off":
-        # 
-        # Read pump periods and turn it on if needed
-        # 
-        result = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id,
-                                                    range=pump_range_name).execute()
+    open(cwd + '/status.json','w').write(json.dumps(status_dict))
 
-        values = result.get('values', [])
-        
-        if not values:
-            print('No data found.')
-            sys.exit()
-
-        update_status = False
-        x = 1
-        for row in values[1:]:
-            x += 1
-            a = datetime.strptime(row[0], time_format)
-            if len(row) == 1 and a <= current_date_time:
-                update_status = True
-                break
-
-        if update_status:
-            # Send status to the relay
-            relay_in2.set(True)
-            pump_status = current_date_time
-            body = {'values': [ [ "done" ] ]}
-            result = service.spreadsheets().values().update(spreadsheetId=spreadsheet_id, range=pump_done_range_name + str(x),
-                valueInputOption=value_input_option, body=body).execute()
-        else:
-            print('Pump: No update required')
-
-    else:
-        if pump_status < current_date_time - timedelta(seconds=pump_interval):
-            # Send status to the relay
-            relay_in2.set(False)
-            pump_status = "off"
-            print('Pump: Shut down')
-        else:
-            print('Pump: nothing to do, still watering')
 
     ### Light sensor
     light_sensor_value = sensor_light.measure()
-
     ### Temp / humi sensor
     dht11_sensor_value = sensor_dht11.measure()
 
+
     # update system status
-    values = [
-        [ current_date_time.strftime(time_format) ],
-        [ dht11_sensor_value[0] ],
-        [ dht11_sensor_value[1] ],
-        [ light_sensor_value ],
-        [ light_status ],
-        [ pump_status.strftime(time_format) if type(pump_status) is datetime else pump_status]
-    ]
-    body = {'values': values}
+    measure = Measure(date=current_date_time, 
+                    temperature=dht11_sensor_value[0], 
+                    humidity=dht11_sensor_value[1], 
+                    light=light_sensor_value)
 
-    result = service.spreadsheets().values().update(spreadsheetId=spreadsheet_id, range=status_range_name,
-        valueInputOption=value_input_option, body=body).execute()
 
-    # update sensor stats
+    try:
+        measure.save(spreadsheet=spreadsheet_id)
+        measure.restore()
+    except Exception as e:
+        measure.store()
+        print("Some problem storing status, saving for later. Exception: ", e)
+            
 
-    measure = Measure(date=current_date_time, temperature=dht11_sensor_value[0], humidity=dht11_sensor_value[1], light=light_sensor_value)
-    session.add(measure)
-    session.commit()
+
 
 
 if __name__ == '__main__':

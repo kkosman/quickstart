@@ -9,7 +9,7 @@ mockup = False
 try:
 	import RPi.GPIO as GPIO
 	from libs.DHT11 import dht11
-except ImportError:
+except:
     mockup = True
     print("No RPi, working with mockup Sensor DHT11")
 

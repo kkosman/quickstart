@@ -8,7 +8,7 @@ from functools import reduce
 mockup = False
 try:
 	import RPi.GPIO as GPIO
-except ImportError:
+except:
     mockup = True
     print("No RPi, working with mockup Sensor")
 

@@ -4,7 +4,7 @@ import time
 mockup = False
 try:
     import gpiozero
-except ImportError:
+except:
     mockup = True
     print("No gpiozero, working with mockup relay")
 
