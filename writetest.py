@@ -45,7 +45,7 @@ def main(argv):
 
     # first check command line params
     try:
-        opts, args = getopt.getopt(argv,"d",["debug"])
+        opts, args = getopt.getopt(argv,"d:t",["debug","test"])
     except getopt.GetoptError:
         print ('writetest.py --debug')
         sys.exit(2)
