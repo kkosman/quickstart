@@ -60,6 +60,11 @@ def main(argv):
             water_duration = 30 # seconds
             debug = True
             spreadsheet_id = '1h8LiPEk6veikU26rA7VLptVBEJdhJyhRdL5Ft7kK1KE'
+        elif opt in ("-t", "--test"):
+            # set test values
+            sleep_interval = 10 # seconds
+            pump_interval = 1 # minutes
+            water_duration = 30 # seconds
 
     current_date_time = datetime.now()
 
