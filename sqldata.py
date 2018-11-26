@@ -11,10 +11,6 @@ from datetime import datetime
 
 import json
 
-from googleapiclient.discovery import build
-from httplib2 import Http
-from oauth2client import file, client, tools
- 
 Base = declarative_base()
 cwd = path.realpath(__file__)
 cwd = path.dirname(cwd)
@@ -24,18 +20,6 @@ with open(cwd + '/db.conf') as f:
 engine = create_engine(db_conf)
 time_format = "%y/%m/%d %H:%M:%S"
 
-# If modifying these scopes, delete the file token.json.
-SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
-#1h8LiPEk6veikU26rA7VLptVBEJdhJyhRdL5Ft7kK1KE
-# The ID and range of a sample spreadsheet.
-light_range_name = 'Light!A:B'
-pump_range_name = 'PumpPeriods!A:B'
-pump_done_range_name = 'PumpPeriods!B'
-status_range_name = 'Status!B1:B'
-periods_range_name = ['Light!A2:A','LightPeriods!A2:C']
-sensor_stats_range_name = 'SensorStats!A2:D'
-
-value_input_option = 'USER_ENTERED'
  
 class Measure(Base):
     __tablename__ = 'measure'
@@ -45,22 +29,7 @@ class Measure(Base):
     humidity = Column(Float(precision=2), nullable=False)
     light = Column(Float(precision=2), nullable=False)
 
-    def save(self, spreadsheet=False):
-        if spreadsheet:
-            # store to google drive
-            body = {'values': self.get_values()}
-
-            # authorize to google api
-            store = file.Storage(cwd+'/token.json')
-            creds = store.get()
-            if not creds or creds.invalid:
-                flow = client.flow_from_clientsecrets(cwd+'/credentials.json', SCOPES)
-                creds = tools.run_flow(flow, store)
-            service = build('sheets', 'v4', http=creds.authorize(Http()))
-
-            result = service.spreadsheets().values().update(spreadsheetId=spreadsheet, range=status_range_name,
-                valueInputOption=value_input_option, body=body).execute()
-
+    def save(self):
         #store to SQL DB
         Session = sessionmaker(bind=engine)
         session = Session()    
@@ -68,7 +37,9 @@ class Measure(Base):
         session.commit()
 
     def store(self):
-        open(cwd + '/.data_store','a').write(json.dumps(self.get_values()) + '\n')
+        fs = open(cwd + '/.data_store','a')
+        fs.write(json.dumps(self.get_values()) + '\n')
+        fs.close()
 
     def restore(self):
         try:
@@ -82,7 +53,9 @@ class Measure(Base):
                     measure.save()
 
 
-            open(cwd + '/.data_store','w').write('')
+            fs = open(cwd + '/.data_store','w')
+            fs.write('')
+            fs.close()
         except Exception as e:
             print("failed to restore! ", e)
 

@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 from __future__ import print_function
 from datetime import datetime, timedelta
 
@@ -28,7 +27,6 @@ pump_status = 'off'
 time_format = "%y/%m/%d %H:%M:%S"
 debug = False
 
-spreadsheet_id = '10PgzjEwEv8nA-6zc7d099h4i1qp035XBhp1DFkfFmjY'
 
 # IN 1,2,3,4 -> PIN 12,16,20,21
 relay_in1 = relay.Relay(12) # light
@@ -42,11 +40,10 @@ sensor_light = sensor_light.Sensor(18) # light / color sensor
 sensor_dht11 = sensor_dht11.Sensor(17) # temp / humi sensor
 
 def main(argv):
-    global light_status, pump_status, spreadsheet_id, debug, sleep_interval, pump_interval, water_duration;
-
+    global light_status, pump_status, debug, sleep_interval, pump_interval, water_duration, day_length;
     # first check command line params
     try:
-        opts, args = getopt.getopt(argv,"d:t",["debug","test"])
+        opts, args = getopt.getopt(argv,"dt",["debug","test"])
     except getopt.GetoptError:
         print ('writetest.py --debug')
         sys.exit(2)
@@ -56,11 +53,10 @@ def main(argv):
             sys.exit()
         elif opt in ("-d", "--debug"):
             # set test values
-            sleep_interval = 10 # seconds
-            pump_interval = 1 # minutes
-            water_duration = 30 # seconds
+            sleep_interval = 1 # seconds
+            pump_interval = 0.1 # minutes
+            water_duration = 10 # seconds
             debug = True
-            spreadsheet_id = '1h8LiPEk6veikU26rA7VLptVBEJdhJyhRdL5Ft7kK1KE'
         elif opt in ("-t", "--test"):
             # set test values
             sleep_interval = 10 # seconds
@@ -69,11 +65,11 @@ def main(argv):
             day_length = 1 # hours
 
     current_date_time = datetime.now()
-
     # Get status from a file
     try:
         status_file = open(cwd + '/status.json','r')
         status_dict = json.loads(status_file.read())
+        status_file.close()
     except Exception as e:
         status_dict = {
             'is_watering': False,
@@ -132,14 +128,11 @@ def main(argv):
 
 
     try:
-        measure.save(spreadsheet=spreadsheet_id)
+        measure.save()
         measure.restore()
     except Exception as e:
         measure.store()
         print("Some problem storing status, saving for later. Exception: ", e)
-            
-
-
 
 
 if __name__ == '__main__':
@@ -148,6 +141,7 @@ if __name__ == '__main__':
         while True:
             main(sys.argv[1:])
             sleep(sleep_interval)
+            
     except KeyboardInterrupt:
         print("Stopping...");
 
