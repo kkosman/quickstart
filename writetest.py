@@ -22,6 +22,7 @@ cwd = path.dirname(cwd)
 sleep_interval = 60 # seconds
 pump_interval = 60 # minutes
 water_duration = 60 # seconds
+day_length = 20 # hours
 light_status = 'off'
 pump_status = 'off'
 time_format = "%y/%m/%d %H:%M:%S"
@@ -65,6 +66,7 @@ def main(argv):
             sleep_interval = 10 # seconds
             pump_interval = 1 # minutes
             water_duration = 30 # seconds
+            day_length = 1 # hours
 
     current_date_time = datetime.now()
 
@@ -105,7 +107,7 @@ def main(argv):
 
 
     ### Light status update
-    light_status = fourseasons.is_it_night_or_day(current_date_time)
+    light_status = fourseasons.is_it_night_or_day(current_date_time, day_length = day_length)
     # Send status to the relay
     relay_in1.set(light_status == "day")
 
