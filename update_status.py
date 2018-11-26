@@ -30,7 +30,7 @@ def main(argv):
     session = Session()    
 
     result = session.query(Measure).order_by(Measure.date.desc()).first()
-    valid = "Valid" if datetime.now() > result.date - timedelta(minutes=5) else "Invalid"
+    valid = "Valid" if result.date > (datetime.now() - timedelta(minutes=5)) else "Invalid"
 
     output = '''Last seen: %s %s
 Temperature: %d
