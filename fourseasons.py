@@ -32,7 +32,7 @@ class fourseasons():
 		return month_and_day
 
 	def is_it_night_or_day(current_date, day_length = 20):
-		today = get_today(current_date, day_length)
+		today = fourseasons.get_today(current_date, day_length)
 
 		duration = fourseasons.quartic() * (day_length / 24.0)
 		night_length = day_length - duration
