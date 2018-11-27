@@ -16,10 +16,14 @@ from httplib2 import Http
 from oauth2client import file, client, tools
  
 from sqldata import Measure
+from fourseasons import fourseasons
 
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt, mpld3
+import numpy as np
+
 import pandas as pd
+import math
 
 
 time_format = "%y/%m/%d %H:%M:%S"
@@ -39,6 +43,7 @@ def main(argv):
     Session = sessionmaker(bind=engine)
     session = Session()    
 
+    # Get all Measures
     result = session.query(Measure).order_by(Measure.date.desc())[0:2000]
     res = {'date':[],'light':[]}
     for m in result:
@@ -47,14 +52,41 @@ def main(argv):
 
 
     measures = pd.DataFrame({
-        'date': pd.to_datetime(res['date'], format=time_format),
+        # 'date': pd.to_datetime(res['date'], format=time_format),
+        'date': res['date'],
         'light': res['light'],
     })
     
     measures.set_index(measures['date'])
 
+    draw_seasons_graph()
+
+    # draw_last_measures(res)
+
+
+def draw_seasons_graph():
     fig, ax = plt.subplots()
-    ax.plot(measures.index, measures.light)
+
+    x = np.arange(1, 14, 0.1)
+    y = fourseasons.quartic(x)
+
+    current_x = fourseasons.get_today(datetime.now(), day_length = 20)
+    print(current_x,fourseasons.quartic(current_x))
+
+    ax.axvline(x=current_x, color='k')
+    ax.plot(x, y)
+
+    fig.savefig("test2.png")
+
+    plt.show()
+    # mpld3.show()
+
+
+def draw_last_measures(measures):
+    fig, ax = plt.subplots()
+    # ax.plot(measures.index, measures.light)
+    ax.plot(res['date'], res['light'])
+    plt.xticks(rotation='vertical')
 
     ax.set(xlabel='date', ylabel='light',
            title='Light intensity')
@@ -62,7 +94,7 @@ def main(argv):
 
     fig.savefig("test.png")
 
-
+    mpld3.show()
 
 
 
