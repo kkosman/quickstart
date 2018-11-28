@@ -39,8 +39,9 @@ sensor_light = sensor_light.Sensor(18) # light / color sensor
 # PIN 17
 sensor_dht11 = sensor_dht11.Sensor(17) # temp / humi sensor
 
+# tmp_x = 0
 def main(argv):
-    global light_status, pump_status, debug, sleep_interval, pump_interval, water_duration, day_length;
+    global light_status, pump_status, debug, sleep_interval, pump_interval, water_duration, day_length #, tmp_x
     # first check command line params
     try:
         opts, args = getopt.getopt(argv,"dt",["debug","test"])
@@ -59,12 +60,14 @@ def main(argv):
             debug = True
         elif opt in ("-t", "--test"):
             # set test values
-            sleep_interval = 10 # seconds
-            pump_interval = 1 # minutes
-            water_duration = 30 # seconds
+            sleep_interval = 1 # seconds
+            pump_interval = 0.1 # minutes
+            water_duration = 10 # seconds
             day_length = 1 # hours
 
-    current_date_time = datetime.now()
+    # tmp_x+=1
+    current_date_time = datetime.now()# + timedelta(hours=tmp_x)
+
     # Get status from a file
     try:
         status_file = open(cwd + '/status.json','r')

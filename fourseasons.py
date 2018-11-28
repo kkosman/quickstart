@@ -37,9 +37,11 @@ class fourseasons():
 		duration = fourseasons.quartic(today) * (day_length / 24.0)
 		night_length = day_length - duration
 
-		current_hour = ( ( current_date.hour + ( current_date.minute / 60.0 ) ) / 24.0 ) * duration
+		current_hour = ( ( current_date.hour + ( current_date.minute / 60.0 ) ) / 24.0 )# * (day_length / 24.0)
+		# print(current_date)
+		# print(today, duration, day_length, current_hour)
 		day_or_night = "night" if current_hour > duration else "day"
+		# print(day_or_night)
+
 
 		return day_or_night
-
-
