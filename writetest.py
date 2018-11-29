@@ -21,7 +21,6 @@ cwd = path.dirname(cwd)
 sleep_interval = 60 # seconds
 pump_interval = 60 # minutes
 water_duration = 60 # seconds
-day_length = 20 # hours
 light_status = 'off'
 pump_status = 'off'
 time_format = "%y/%m/%d %H:%M:%S"
@@ -39,9 +38,8 @@ sensor_light = sensor_light.Sensor(18) # light / color sensor
 # PIN 17
 sensor_dht11 = sensor_dht11.Sensor(17) # temp / humi sensor
 
-# tmp_x = 0
 def main(argv):
-    global light_status, pump_status, debug, sleep_interval, pump_interval, water_duration, day_length #, tmp_x
+    global light_status, pump_status, debug, sleep_interval, pump_interval, water_duration 
     # first check command line params
     try:
         opts, args = getopt.getopt(argv,"dt",["debug","test"])
@@ -63,10 +61,8 @@ def main(argv):
             sleep_interval = 1 # seconds
             pump_interval = 0.1 # minutes
             water_duration = 10 # seconds
-            day_length = 1 # hours
 
-    # tmp_x+=1
-    current_date_time = datetime.now()# + timedelta(hours=tmp_x)
+    current_date_time = datetime.now()
 
     # Get status from a file
     try:
@@ -106,7 +102,8 @@ def main(argv):
 
 
     ### Light status update
-    light_status = fourseasons.is_it_night_or_day(current_date_time, day_length = day_length)
+    season = fourseasons(current_date_time)
+    light_status = season.is_it_night_or_day()
     # Send status to the relay
     relay_in1.set(light_status == "day")
 
