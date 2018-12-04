@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import sys, getopt
-from os import path
+import os
 
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Float
 from sqlalchemy.ext.declarative import declarative_base
@@ -12,10 +12,17 @@ from datetime import datetime
 import json
 
 Base = declarative_base()
-cwd = path.realpath(__file__)
-cwd = path.dirname(cwd)
-with open(cwd + '/db.conf') as f:
-    db_conf = f.read()
+
+if 'SNAP_USER_DATA' in os.environ:
+    cwd = os.environ['SNAP_USER_DATA']
+    with open(os.environ['SNAP_DATA'] + '/db.conf') as f:
+        db_conf = f.read()
+else:
+    cwd = os.path.realpath(__file__)
+    cwd = os.path.dirname(cwd)
+    with open(cwd + '/db.conf') as f:
+        db_conf = f.read()
+    
     
 engine = create_engine(db_conf)
 time_format = "%y/%m/%d %H:%M:%S"
@@ -37,7 +44,12 @@ class Measure(Base):
         session.commit()
 
     def store(self):
-        fs = open(cwd + '/.data_store','a')
+        # Get status from a file
+        try:
+            fs = open(cwd + '/.data_store','a')
+        except:
+            fs = open(cwd + '/.data_store','w')
+
         fs.write(json.dumps(self.get_values()) + '\n')
         fs.close()
 

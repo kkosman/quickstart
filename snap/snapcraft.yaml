@@ -1,0 +1,27 @@
+name: quickstart
+version: '1.0'
+summary: Raspberry PI 3 simple control service
+description: |
+  Runs a recurrent sensors reads and saves data to a storage
+
+confinement: devmode
+grade: devel
+base: core18
+
+parts:
+  quickstart:
+    plugin: python
+    python-version: python3
+    source: .
+    stage-packages:
+      - python3
+      - python3-distutils
+      - libmysqlclient-dev
+
+apps:
+  quickstart:
+    command: bin/writetest.py
+    daemon: simple
+    restart-condition: always
+    environment:
+      PYTHONPATH: $SNAP/lib/python3.6/site-packages/src:$PYTHONPATH

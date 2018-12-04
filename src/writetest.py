@@ -3,8 +3,7 @@ from __future__ import print_function
 from datetime import datetime, timedelta
 
 from time import sleep
-from os import path
-import sys, getopt
+import sys, getopt, os
 
 from modules import relay, sensor_light, sensor_dht11
 from sqldata import Measure
@@ -15,8 +14,12 @@ from sqlalchemy import create_engine
 import json
 
 
-cwd = path.realpath(__file__)
-cwd = path.dirname(cwd)
+
+if 'SNAP_USER_DATA' in os.environ:
+    cwd = os.environ['SNAP_USER_DATA']
+else:
+    cwd = os.path.realpath(__file__)
+    cwd = os.path.dirname(cwd)
 
 sleep_interval = 60 # seconds
 pump_interval = 60 # minutes
