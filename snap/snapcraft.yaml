@@ -16,6 +16,9 @@ parts:
     stage-packages:
       - python3
       - libmysqlclient-dev
+      - build-essential 
+      - libssl-dev 
+      - libffi-dev
 
 apps:
   quickstart:
