@@ -6,7 +6,7 @@ description: |
 
 confinement: devmode
 grade: devel
-base: core18
+# base: core18
 
 parts:
   quickstart:
@@ -15,7 +15,6 @@ parts:
     source: .
     stage-packages:
       - python3
-      - python3-distutils
       - libmysqlclient-dev
 
 apps:

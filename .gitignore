@@ -5,3 +5,4 @@ db.conf
 status.json
 status.txt
 .data_store
+*.snap
