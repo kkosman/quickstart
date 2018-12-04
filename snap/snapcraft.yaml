@@ -16,8 +16,6 @@ parts:
     stage-packages:
       - python3
       - libmysqlclient-dev
-      - libfreetype6-dev
-      - libpng12-dev
 
 apps:
   quickstart:
