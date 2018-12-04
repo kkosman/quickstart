@@ -18,7 +18,7 @@ setup(
     author='Krzysztof Kosman',
     author_email='krzysztof.kosman@gmail.com',
     url='https://github.com/kkosman/quickstart.git',
-    packages=['src','src/modules','src/libs'],
+    packages=['sensormodules'],
     install_requires=read('requirements.txt'),
     include_package_data=True,
     zip_safe=True,

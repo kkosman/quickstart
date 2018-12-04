@@ -5,9 +5,7 @@ from datetime import datetime, timedelta
 from time import sleep
 import sys, getopt, os
 
-from modules import relay, sensor_light, sensor_dht11
-from sqldata import Measure
-from fourseasons import fourseasons
+from sensormodules import relay, sensor_light, sensor_dht11, sqldata, fourseasons
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 
@@ -105,7 +103,7 @@ def main(argv):
 
 
     ### Light status update
-    season = fourseasons(current_date_time)
+    season = fourseasons.fourseasons(current_date_time)
     light_status = season.is_it_night_or_day()
     # Send status to the relay
     relay_in1.set(light_status == "day")
@@ -124,7 +122,7 @@ def main(argv):
 
 
     # update system status
-    measure = Measure(date=current_date_time, 
+    measure = sqldata.Measure(date=current_date_time, 
                     temperature=dht11_sensor_value[0], 
                     humidity=dht11_sensor_value[1], 
                     light=light_sensor_value)

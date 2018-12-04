@@ -1,5 +1,9 @@
 import time
-import RPi
+
+try:
+    import RPi
+except:
+    print("No RPi DHT11 wont work")
 
 
 class DHT11Result:
