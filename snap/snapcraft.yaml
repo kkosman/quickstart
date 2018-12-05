@@ -7,7 +7,7 @@ description: |
 confinement: devmode
 grade: devel
 base: core18
-architectures: [armhf]
+architectures: [amd64,armhf]
 
 parts:
   quickstart:
