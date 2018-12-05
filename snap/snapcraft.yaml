@@ -6,7 +6,7 @@ description: |
 
 confinement: devmode
 grade: devel
-base: core18
+# base: core18
 architectures: [amd64, i386, armhf]
 
 parts:
@@ -16,6 +16,7 @@ parts:
     source: .
     stage-packages:
       - python3
+      - python3-dev
       - libmysqlclient-dev
       - build-essential 
       - libssl-dev 
