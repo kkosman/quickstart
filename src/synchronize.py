@@ -7,10 +7,9 @@ import sys, getopt, os, requests, json
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from sensormodules import measure
-################
-# co z pustym plikiem!?
 
-sleep_interval = 5 # seconds
+sleep_interval = 60 * 5 # 5 minutes
+config_path = False 
 
 def read_and_remove(file, number = 10):
     count = 0
@@ -24,12 +23,16 @@ def read_and_remove(file, number = 10):
             f.seek(-1, os.SEEK_CUR)
             char = f.read(1)
             line += char.decode("utf-8") 
+            # print("run ", count, number, f.tell())
             if char == b'\n':
                 count += 1
             if count == number + 1:
                 f.truncate()
                 break
             f.seek(-1, os.SEEK_CUR)
+            if f.tell() == 0:
+                f.truncate()
+                break
 
         lines += line[::-1]
 
@@ -46,20 +49,43 @@ def check_internet():
     return False
 
 def main(argv):
+    global sleep_interval, config_path
+    # first check command line params
+    try:
+        opts, args = getopt.getopt(argv,"ht",["test","path="])
+    except getopt.GetoptError:
+        print ('synchronize.py -h')
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print ('synchronize.py --path=')
+            sys.exit()
+        elif opt in ("-t", "--test"):
+            # set test values
+            sleep_interval = 5 # seconds
+        elif opt in ("--path"):
+            config_path = arg
+            user_data_path = config_path
+
 
     if not check_internet():
         # maybe additional sleep?
         return
 
-    if 'SNAP_USER_DATA' in os.environ:
+    if not config_path and 'SNAP_USER_DATA' in os.environ:
         user_data_path = os.environ['SNAP_USER_DATA']
         config_path = os.environ['SNAP_DATA']
     else:
-        user_data_path = "./src/"
-        config_path = "./src/"
+        user_data_path = "."
+        config_path = "."
 
 
-    lines = read_and_remove(user_data_path + "/.data_store", number=10)
+    try:
+        lines = read_and_remove(user_data_path + "/.data_store", number=10)
+    except FileNotFoundError as e:
+        print("Nofile .data_store")
+        return
+
     if not lines:
         print("Wrong lines object", lines)
         return

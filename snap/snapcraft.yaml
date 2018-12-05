@@ -6,7 +6,7 @@ description: |
 
 confinement: devmode
 grade: devel
-# base: core18
+base: core18
 architectures: [amd64, i386, armhf]
 
 parts:
