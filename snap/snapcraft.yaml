@@ -1,12 +1,13 @@
 name: quickstart
-version: '1.1'
+version: '1.2'
 summary: Raspberry PI 3 simple control service
 description: |
   Runs a recurrent sensors reads and saves data to a storage
 
 confinement: devmode
 grade: devel
-architectures: [amd64, armhf, i386]
+base: core18
+architectures: [amd64, i386, armhf]
 
 parts:
   quickstart:
@@ -25,5 +26,7 @@ apps:
     command: bin/writetest.py
     daemon: simple
     restart-condition: always
-    environment:
-      PYTHONPATH: $SNAP/lib/python3.6/site-packages/src:$PYTHONPATH
+  quicksynch:
+    command: bin/synchronize.py
+    daemon: simple
+    restart-condition: always

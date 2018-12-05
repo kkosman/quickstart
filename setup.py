@@ -12,7 +12,7 @@ def read(name):
         return f.read()
 setup(
     name='quickstart',
-    version='0.0.1',
+    version='1.1',
     description='description',
     long_description=readme,
     author='Krzysztof Kosman',
@@ -29,5 +29,5 @@ setup(
         'Intended Audience :: Developers',
         'Natural Language :: English'
     ],
-    scripts=['src/writetest.py']
+    scripts=['src/writetest.py','src/synchronize.py']
 )

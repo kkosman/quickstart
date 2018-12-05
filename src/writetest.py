@@ -3,21 +3,10 @@ from __future__ import print_function
 from datetime import datetime, timedelta
 
 from time import sleep
-import sys, getopt, os
+import sys, getopt, os, json
 
-from sensormodules import relay, sensor_light, sensor_dht11, sqldata, fourseasons
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
+from sensormodules import relay, sensor_light, sensor_dht11, measure, fourseasons
 
-import json
-
-
-
-if 'SNAP_USER_DATA' in os.environ:
-    cwd = os.environ['SNAP_USER_DATA']
-else:
-    cwd = os.path.realpath(__file__)
-    cwd = os.path.dirname(cwd)
 
 sleep_interval = 60 # seconds
 pump_interval = 60 # minutes
@@ -43,13 +32,13 @@ def main(argv):
     global light_status, pump_status, debug, sleep_interval, pump_interval, water_duration 
     # first check command line params
     try:
-        opts, args = getopt.getopt(argv,"dt",["debug","test"])
+        opts, args = getopt.getopt(argv,"dt",["debug","test","path="])
     except getopt.GetoptError:
         print ('writetest.py --debug')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print ('writetest.py --debug')
+            print ('writetest.py --debug --test --path=')
             sys.exit()
         elif opt in ("-d", "--debug"):
             # set test values
@@ -62,12 +51,24 @@ def main(argv):
             sleep_interval = 1 # seconds
             pump_interval = 0.1 # minutes
             water_duration = 10 # seconds
+        elif opt in ("--path"):
+            config_path = arg
+            user_data_path = config_path
+
+
+    if 'SNAP_USER_DATA' in os.environ:
+        config_path = os.environ['SNAP_DATA']
+        user_data_path = os.environ['SNAP_USER_DATA']
+    elif not config_path:
+        config_path = os.path.realpath(__file__)
+        config_path = os.path.dirname(config_path)
+        user_data_path = config_path
 
     current_date_time = datetime.now()
 
     # Get status from a file
     try:
-        status_file = open(cwd + '/status.json','r')
+        status_file = open(user_data_path + '/status.json','r')
         status_dict = json.loads(status_file.read())
         status_file.close()
     except Exception as e:
@@ -76,7 +77,7 @@ def main(argv):
             'last_water': (current_date_time - timedelta(minutes=100)).strftime(time_format)
         }
 
-        status_file = open(cwd + '/status.json','w')
+        status_file = open(user_data_path + '/status.json','w')
         status_file.write(json.dumps(status_dict))
         status_file.truncate()
         status_file.close()
@@ -109,7 +110,7 @@ def main(argv):
     relay_in1.set(light_status == "day")
 
 
-    status_file = open(cwd + '/status.json','w')
+    status_file = open(user_data_path + '/status.json','w')
     status_file.write(json.dumps(status_dict))
     status_file.truncate()
     status_file.close()
@@ -122,18 +123,12 @@ def main(argv):
 
 
     # update system status
-    measure = sqldata.Measure(date=current_date_time, 
-                    temperature=dht11_sensor_value[0], 
-                    humidity=dht11_sensor_value[1], 
-                    light=light_sensor_value)
-
-
-    try:
-        measure.save()
-        measure.restore()
-    except Exception as e:
-        measure.store()
-        print("Some problem storing status, saving for later. Exception: ", e)
+    measure_object = measure.Measure( user_data_path = user_data_path, config_path = config_path )
+    measure_object.date = current_date_time
+    measure_object.temperature = dht11_sensor_value[0]
+    measure_object.humidity = dht11_sensor_value[1]
+    measure_object.light = light_sensor_value
+    measure_object.store()
 
 
 if __name__ == '__main__':
