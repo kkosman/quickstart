@@ -27,6 +27,7 @@ apps:
     command: bin/writetest.py
     daemon: simple
     restart-condition: always
+    plugs: [gpio-memory-control] 
   quicksynch:
     command: bin/synchronize.py
     daemon: simple
