@@ -8,6 +8,11 @@ import sys, getopt, os, json
 from sensormodules import relay, sensor_light, sensor_dht11, measure, fourseasons
 
 
+import logging
+logger = False
+logger_handler = False
+
+
 sleep_interval = 60 # seconds
 pump_interval = 60 # minutes
 water_duration = 60 # seconds
@@ -29,7 +34,7 @@ sensor_light = sensor_light.Sensor(18) # light / color sensor
 sensor_dht11 = sensor_dht11.Sensor(17) # temp / humi sensor
 
 def main(argv):
-    global light_status, pump_status, debug, sleep_interval, pump_interval, water_duration 
+    global light_status, pump_status, debug, sleep_interval, pump_interval, water_duration , logger, logger_handler
     # first check command line params
     try:
         opts, args = getopt.getopt(argv,"dt",["debug","test","path="])
@@ -41,10 +46,6 @@ def main(argv):
             print ('writetest.py --debug --test --path=')
             sys.exit()
         elif opt in ("-d", "--debug"):
-            # set test values
-            sleep_interval = 1 # seconds
-            pump_interval = 0.1 # minutes
-            water_duration = 10 # seconds
             debug = True
         elif opt in ("-t", "--test"):
             # set test values
@@ -56,13 +57,30 @@ def main(argv):
             user_data_path = config_path
 
 
-    if 'SNAP_USER_DATA' in os.environ:
+    if 'SNAP_COMMON' in os.environ:
         config_path = os.environ['SNAP_DATA']
-        user_data_path = os.environ['SNAP_USER_DATA']
+        user_data_path = os.environ['SNAP_COMMON']
+        logs_path = os.environ['SNAP_COMMON']
     elif not config_path:
         config_path = os.path.realpath(__file__)
         config_path = os.path.dirname(config_path)
         user_data_path = config_path
+        logs_path = "./logs"
+
+    if not logger:
+        directory = os.path.dirname(logs_path)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        logger = logging.getLogger("quickstart")
+        logger.setLevel(logging.DEBUG if debug else logging.ERROR)
+        logger_handler = logging.FileHandler(logs_path + "/quickstart.log")
+        logger_handler.setLevel(logging.DEBUG if debug else logging.ERROR)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        logger_handler.setFormatter(formatter)
+        logger.addHandler(logger_handler)
+
+    logger.error("Paths: %s, %s, %s" % (user_data_path, config_path, logs_path))
 
     current_date_time = datetime.now()
 
@@ -82,7 +100,7 @@ def main(argv):
         status_file.truncate()
         status_file.close()
 
-        print("Trying to create a new status file. Exception: ", e)
+        logger.warning("Trying to create a new status file. Exception: ", e)
     
     pump_status = datetime.strptime(status_dict['last_water'], time_format)
 
@@ -91,16 +109,16 @@ def main(argv):
     if status_dict['is_watering'] and pump_status < current_date_time - timedelta(seconds=water_duration): # we should stop watering
         status_dict['is_watering'] = False
         relay_in2.set(False)
-        print("Watering: stop",pump_status, current_date_time - timedelta(seconds=water_duration))
+        logger.debug("Watering: stop",pump_status, current_date_time - timedelta(seconds=water_duration))
 
     elif not status_dict['is_watering'] and pump_status < current_date_time - timedelta(minutes=pump_interval): # we should start watering
         status_dict['last_water'] = current_date_time.strftime(time_format)
         status_dict['is_watering'] = True
         relay_in2.set(True)
-        print("Watering: start",pump_status, current_date_time - timedelta(minutes=pump_interval))
+        logger.debug("Watering: start",pump_status, current_date_time - timedelta(minutes=pump_interval))
 
     else: # nothing to do
-        print("Watering: nothing to change")
+        logger.debug("Watering: nothing to change")
 
 
     ### Light status update
@@ -111,7 +129,8 @@ def main(argv):
 
 
     status_file = open(user_data_path + '/status.json','w')
-    status_file.write(json.dumps(status_dict))
+    status_content = json.dumps(status_dict)
+    status_file.write(status_content)
     status_file.truncate()
     status_file.close()
 
@@ -128,7 +147,10 @@ def main(argv):
     measure_object.temperature = dht11_sensor_value[0]
     measure_object.humidity = dht11_sensor_value[1]
     measure_object.light = light_sensor_value
-    measure_object.store()
+    measure_object.store(user_data_path)
+
+
+    logger.debug("Sensors: %s, %s ; Light status: %s ; Status: %s" % (light_sensor_value, dht11_sensor_value ,light_status, status_content))
 
 
 if __name__ == '__main__':
@@ -139,5 +161,5 @@ if __name__ == '__main__':
             sleep(sleep_interval)
             
     except KeyboardInterrupt:
-        print("Stopping...");
+        logger.info("Stopping...");
 

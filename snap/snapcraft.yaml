@@ -1,5 +1,5 @@
 name: quickstart
-version: '1.3.5'
+version: '1.3.6'
 summary: Raspberry PI 3 simple control service
 description: |
   Runs a recurrent sensors reads and saves data to a storage
@@ -13,7 +13,8 @@ parts:
   quickstart:
     plugin: python
     python-version: python3
-    python-packages: [RPi.GPIO]
+    python-packages: 
+      - RPi.GPIO
     source: .
     stage-packages:
       - python3

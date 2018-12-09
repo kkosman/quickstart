@@ -34,8 +34,8 @@ class Measure(Base):
         if config_path:
             self.config_path = config_path
 
-        if not user_data_path and 'SNAP_USER_DATA' in os.environ:
-            self.user_data_path = os.environ['SNAP_USER_DATA']
+        if not user_data_path and 'SNAP_COMMON' in os.environ:
+            self.user_data_path = os.environ['SNAP_COMMON']
             self.config_path = os.environ['SNAP_DATA']
 
 
@@ -52,7 +52,6 @@ class Measure(Base):
         session.commit()
 
     def store(self):
-        # Get status from a file
         try:
             fs = open(self.user_data_path + '/.data_store','a')
         except:
