@@ -96,33 +96,40 @@ def main(argv):
         # maybe additional sleep?
         return
 
+    while True:
 
-
-    try:
-        lines = read_and_remove(user_data_path + "/.data_store", number=10)
-    except FileNotFoundError as e:
-        logger.error("Nofile %s" % (user_data_path + "/.data_store"))
-        return
-
-    if not lines:
-        logger.error("Wrong lines object", lines)
-        return
-
-    logger.debug("entring lines: %s" % lines)
-    for line in lines:
-        logger.debug("proces line: %s" % line)
         try:
-            v = json.loads(line)
-        except json.decoder.JSONDecodeError:
-            continue
-        
-        measure_object = measure.Measure( user_data_path = user_data_path, config_path = config_path )
-        measure_object.date = v[0]
-        measure_object.temperature = v[1]
-        measure_object.humidity = v[2]
-        measure_object.light = v[3]
-        measure_object.save()
-        logger.debug("processed line")
+            lines = read_and_remove(user_data_path + "/.data_store", number=10)
+        except FileNotFoundError as e:
+            logger.error("Nofile %s" % (user_data_path + "/.data_store"))
+            return
+
+        if not lines:
+            logger.error("Wrong lines object", lines)
+            break
+
+        if len(str(lines)) < 10:
+            logger.debug("No more lines to process.")
+            break
+
+
+        logger.debug("entring lines: %s" % lines)
+        for line in lines:
+            logger.debug("proces line: %s" % line)
+            try:
+                v = json.loads(line)
+            except json.decoder.JSONDecodeError:
+                continue
+            
+            measure_object = measure.Measure( user_data_path = user_data_path, config_path = config_path )
+            measure_object.date = v[0]
+            measure_object.temperature = v[1]
+            measure_object.humidity = v[2]
+            measure_object.light = v[3]
+            measure_object.save()
+            logger.debug("processed line")
+
+        sleep(5) # wait not to overkill DB connection, we are not in a hustle
 
 
 if __name__ == '__main__':
