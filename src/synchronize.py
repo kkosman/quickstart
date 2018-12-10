@@ -13,8 +13,10 @@ logger = False
 logger_handler = False
 
 sleep_interval = 60 * 5 # 5 minutes
-config_path = False 
-user_data_path = False
+
+user_data_path = "."
+config_path = "."
+logs_path = "./logs"
 
 def read_and_remove(file, number = 10):
     count = 0
@@ -57,21 +59,18 @@ def main(argv):
     global sleep_interval, config_path, user_data_path, logs_path, logger, logger_handler
     # first check command line params
     try:
-        opts, args = getopt.getopt(argv,"ht",["test","debug","path="])
+        opts, args = getopt.getopt(argv,"ht",["test","debug"])
     except getopt.GetoptError:
         print('synchronize.py -h')
         sys.exit(2)
     debug = False
     for opt, arg in opts:
         if opt == '-h':
-            print('synchronize.py --path=')
+            print('synchronize.py --debug')
             sys.exit()
         elif opt in ("-t", "--test"):
             # set test values
             sleep_interval = 5 # seconds
-        elif opt in ("--path"):
-            config_path = arg
-            user_data_path = config_path
         elif opt in ("--debug"):
             debug = True
 
@@ -79,10 +78,6 @@ def main(argv):
         user_data_path = os.environ['SNAP_COMMON']
         config_path = os.environ['SNAP_DATA']
         logs_path = os.environ['SNAP_COMMON']
-    elif not config_path:
-        user_data_path = "."
-        config_path = "."
-        logs_path = "./logs"
 
     if not logger:
         directory = os.path.dirname(logs_path)

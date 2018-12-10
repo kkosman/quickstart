@@ -33,17 +33,23 @@ sensor_light = sensor_light.Sensor(18) # light / color sensor
 # PIN 17
 sensor_dht11 = sensor_dht11.Sensor(17) # temp / humi sensor
 
+
+config_path = os.path.realpath(__file__)
+config_path = os.path.dirname(config_path)
+user_data_path = config_path
+logs_path = config_path + "/logs"
+
 def main(argv):
-    global light_status, pump_status, debug, sleep_interval, pump_interval, water_duration , logger, logger_handler
+    global light_status, pump_status, debug, sleep_interval, pump_interval, water_duration , logger, logger_handler, config_path, user_data_path, logs_path
     # first check command line params
     try:
-        opts, args = getopt.getopt(argv,"dt",["debug","test","path="])
+        opts, args = getopt.getopt(argv,"dt",["debug","test"])
     except getopt.GetoptError:
-        print ('writetest.py --debug')
+        print ('writetest.py -h')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print ('writetest.py --debug --test --path=')
+            print ('writetest.py --debug --test ')
             sys.exit()
         elif opt in ("-d", "--debug"):
             debug = True
@@ -52,20 +58,12 @@ def main(argv):
             sleep_interval = 1 # seconds
             pump_interval = 0.1 # minutes
             water_duration = 10 # seconds
-        elif opt in ("--path"):
-            config_path = arg
-            user_data_path = config_path
 
 
     if 'SNAP_COMMON' in os.environ:
         config_path = os.environ['SNAP_DATA']
         user_data_path = os.environ['SNAP_COMMON']
         logs_path = os.environ['SNAP_COMMON']
-    elif not config_path:
-        config_path = os.path.realpath(__file__)
-        config_path = os.path.dirname(config_path)
-        user_data_path = config_path
-        logs_path = "./logs"
 
     if not logger:
         directory = os.path.dirname(logs_path)
@@ -80,7 +78,7 @@ def main(argv):
         logger_handler.setFormatter(formatter)
         logger.addHandler(logger_handler)
 
-    logger.error("Paths: %s, %s, %s" % (user_data_path, config_path, logs_path))
+    logger.debug("Paths: %s, %s, %s" % (user_data_path, config_path, logs_path))
 
     current_date_time = datetime.now()
 
@@ -147,7 +145,7 @@ def main(argv):
     measure_object.temperature = dht11_sensor_value[0]
     measure_object.humidity = dht11_sensor_value[1]
     measure_object.light = light_sensor_value
-    measure_object.store(user_data_path)
+    measure_object.store()
 
 
     logger.debug("Sensors: %s, %s ; Light status: %s ; Status: %s" % (light_sensor_value, dht11_sensor_value ,light_status, status_content))
