@@ -1,11 +1,11 @@
 name: quickstart
-version: '1.3.6'
+version: '1.4'
 summary: Raspberry PI 3 simple control service
 description: |
   Runs a recurrent sensors reads and saves data to a storage
 
-confinement: devmode
-grade: devel
+confinement: strict
+grade: stable
 base: core18
 architectures: [armhf]
 
