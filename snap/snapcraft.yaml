@@ -1,5 +1,5 @@
 name: quickstart
-version: '1.4.2'
+version: '1.4.3'
 summary: Raspberry PI 3 simple control service
 description: |
   Runs a recurrent sensors reads and saves data to a storage
@@ -29,7 +29,11 @@ apps:
     command: bin/writetest.py
     daemon: simple
     restart-condition: always
-    plugs: [gpio-memory-control]
+    plugs:
+      - gpio-memory-control
+      - gpio
+      - physical-memory-control
+      - physical-memory-observe
   quicksynch:
     command: bin/synchronize.py
     daemon: simple
