@@ -7,7 +7,6 @@ import sys, getopt, os, json
 
 from sensormodules import relay, sensor_light, sensor_dht11, measure, fourseasons
 
-
 import logging
 logger = False
 logger_handler = False
@@ -107,13 +106,13 @@ def main(argv):
     if status_dict['is_watering'] and pump_status < current_date_time - timedelta(seconds=water_duration): # we should stop watering
         status_dict['is_watering'] = False
         relay_in2.set(False)
-        logger.debug("Watering: stop",pump_status, current_date_time - timedelta(seconds=water_duration))
+        logger.debug("Watering: stop %s %s" % (pump_status, current_date_time - timedelta(seconds=water_duration)))
 
     elif not status_dict['is_watering'] and pump_status < current_date_time - timedelta(minutes=pump_interval): # we should start watering
         status_dict['last_water'] = current_date_time.strftime(time_format)
         status_dict['is_watering'] = True
         relay_in2.set(True)
-        logger.debug("Watering: start",pump_status, current_date_time - timedelta(minutes=pump_interval))
+        logger.debug("Watering: start %s %s" % (pump_status, current_date_time - timedelta(minutes=pump_interval)))
 
     else: # nothing to do
         logger.debug("Watering: nothing to change")

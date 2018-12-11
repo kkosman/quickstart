@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta
 
 from time import sleep
-import sys, getopt, os, requests, json
+import sys, getopt, os, requests, json, subprocess
 
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
@@ -17,6 +17,8 @@ sleep_interval = 60 * 5 # 5 minutes
 user_data_path = "."
 config_path = "."
 logs_path = "./logs"
+
+internet_failures_count = 0
 
 def read_and_remove(file, number = 10):
     count = 0
@@ -56,7 +58,7 @@ def check_internet():
         return False
 
 def main(argv):
-    global sleep_interval, config_path, user_data_path, logs_path, logger, logger_handler
+    global sleep_interval, config_path, user_data_path, logs_path, logger, logger_handler, internet_failures_count
     # first check command line params
     try:
         opts, args = getopt.getopt(argv,"ht",["test","debug"])
@@ -93,7 +95,18 @@ def main(argv):
         logger.addHandler(logger_handler)
 
     if not check_internet():
-        # maybe additional sleep?
+        ## just a concept for restarting networking
+
+        # internet_failures_count += 1
+        # if internet_failures_count == 2:
+        #     logger.error("Internet is not available second time, attempting to restart wlan0", lines)
+        #     subprocess.Popen("/sbin/ifdown 'wlan0'".split(), stdout=subprocess.PIPE)
+        #     # output, error = process.communicate()            
+        #     sleep(5)
+        #     subprocess.Popen("/sbin/ifup --force 'wlan0'".split(), stdout=subprocess.PIPE)
+
+        #     internet_failures_count = 0
+
         return
 
     while True:
