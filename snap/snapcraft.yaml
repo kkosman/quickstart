@@ -4,7 +4,7 @@ summary: Raspberry PI 3 simple control service
 description: |
   Runs a recurrent sensors reads and saves data to a storage
 
-confinement: classic
+confinement: devmode
 grade: stable
 base: core18
 architectures: [armhf]
