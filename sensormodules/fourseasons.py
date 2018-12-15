@@ -12,7 +12,7 @@ class fourseasons():
 
 	def __init__(self, current_date):
 		self.current_date = current_date
-		self.start_date = datetime.strptime("18/10/01 09:00:00", self.time_format)
+		self.start_date = datetime.strptime("18/05/01 09:00:00", self.time_format)
 		self.start_month = self.start_date.month
 		# start_date = datetime.strptime("18/11/10 00:00:00", time_format)
 
