@@ -12,7 +12,7 @@ def read(name):
         return f.read()
 setup(
     name='quickstart',
-    version='1.3.8',
+    version='1.3.9',
     description='description',
     long_description=readme,
     author='Krzysztof Kosman',

@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 
 class fourseasons():
-	day_length = 24
+	day_length = 22
 	month_length = 30
 	time_format = "%y/%m/%d %H:%M:%S"
 

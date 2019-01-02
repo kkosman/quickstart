@@ -13,7 +13,7 @@ logger_handler = False
 
 
 sleep_interval = 60 # seconds
-pump_interval = 60 # minutes
+pump_interval = 15 # minutes
 water_duration = 60 # seconds
 light_status = 'off'
 pump_status = 'off'
