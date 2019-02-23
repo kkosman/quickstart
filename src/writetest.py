@@ -14,6 +14,7 @@ logger_handler = False
 
 sleep_interval = 10 # seconds
 pump_interval = 5 # minutes
+night_pump_interval = 60 # minutes
 water_duration = 30 # seconds
 light_status = 'off'
 pump_status = 'off'
@@ -39,7 +40,7 @@ user_data_path = config_path
 logs_path = config_path + "/logs"
 
 def main(argv):
-    global light_status, pump_status, debug, sleep_interval, pump_interval, water_duration , logger, logger_handler, config_path, user_data_path, logs_path
+    global light_status, pump_status, debug, sleep_interval, pump_interval, night_pump_interval, water_duration , logger, logger_handler, config_path, user_data_path, logs_path
     # first check command line params
     try:
         opts, args = getopt.getopt(argv,"dt",["debug","test"])
@@ -99,30 +100,36 @@ def main(argv):
 
         logger.warning("Trying to create a new status file. Exception: ", e)
     
-    pump_status = datetime.strptime(status_dict['last_water'], time_format)
-
-
-    # Process if we should water
-    if status_dict['is_watering'] and pump_status < current_date_time - timedelta(seconds=water_duration): # we should stop watering
-        status_dict['is_watering'] = False
-        relay_in2.set(False)
-        logger.debug("Watering: stop %s %s" % (pump_status, current_date_time - timedelta(seconds=water_duration)))
-
-    elif not status_dict['is_watering'] and pump_status < current_date_time - timedelta(minutes=pump_interval): # we should start watering
-        status_dict['last_water'] = current_date_time.strftime(time_format)
-        status_dict['is_watering'] = True
-        relay_in2.set(True)
-        logger.debug("Watering: start %s %s" % (pump_status, current_date_time - timedelta(minutes=pump_interval)))
-
-    else: # nothing to do
-        logger.debug("Watering: nothing to change")
-
 
     ### Light status update
     season = fourseasons.fourseasons(current_date_time)
     light_status = season.is_it_night_or_day()
     # Send status to the relay
     relay_in1.set(light_status == "day")
+
+
+    ### Process if we should water
+    pump_status = datetime.strptime(status_dict['last_water'], time_format)
+    if light_status == "day":
+        interval = pump_interval
+    else:
+        interval = night_pump_interval
+
+
+    if status_dict['is_watering'] and pump_status < current_date_time - timedelta(seconds=water_duration): # we should stop watering
+        status_dict['is_watering'] = False
+        relay_in2.set(False)
+        logger.debug("Watering: stop %s %s" % (pump_status, current_date_time - timedelta(seconds=water_duration)))
+
+    elif not status_dict['is_watering'] and pump_status < current_date_time - timedelta(minutes=interval): # we should start watering
+        status_dict['last_water'] = current_date_time.strftime(time_format)
+        status_dict['is_watering'] = True
+        relay_in2.set(True)
+        logger.debug("Watering: start %s %s" % (pump_status, current_date_time - timedelta(minutes=interval)))
+
+    else: # nothing to do
+        logger.debug("Watering: nothing to change")
+
 
 
     status_file = open(user_data_path + '/status.json','w')
