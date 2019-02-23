@@ -7,3 +7,6 @@ status.txt
 .data_store
 *.snap
 logs
+build
+dist
+quickstart.egg-info
