@@ -12,9 +12,9 @@ logger = False
 logger_handler = False
 
 
-sleep_interval = 60 # seconds
-pump_interval = 15 # minutes
-water_duration = 60 # seconds
+sleep_interval = 10 # seconds
+pump_interval = 5 # minutes
+water_duration = 30 # seconds
 light_status = 'off'
 pump_status = 'off'
 time_format = "%y/%m/%d %H:%M:%S"
@@ -133,21 +133,21 @@ def main(argv):
 
 
     ### Light sensor
-    light_sensor_value = sensor_light.measure()
+#    light_sensor_value = sensor_light.measure()
     ### Temp / humi sensor
-    dht11_sensor_value = sensor_dht11.measure()
+#    dht11_sensor_value = sensor_dht11.measure()
 
 
     # update system status
-    measure_object = measure.Measure( user_data_path = user_data_path, config_path = config_path )
-    measure_object.date = current_date_time
-    measure_object.temperature = dht11_sensor_value[0]
-    measure_object.humidity = dht11_sensor_value[1]
-    measure_object.light = light_sensor_value
-    measure_object.store()
+#    measure_object = measure.Measure( user_data_path = user_data_path, config_path = config_path )
+#    measure_object.date = current_date_time
+#    measure_object.temperature = dht11_sensor_value[0]
+#    measure_object.humidity = dht11_sensor_value[1]
+#    measure_object.light = light_sensor_value
+#    measure_object.store()
 
 
-    logger.debug("Sensors: %s, %s ; Light status: %s ; Status: %s" % (light_sensor_value, dht11_sensor_value ,light_status, status_content))
+#    logger.debug("Sensors: %s, %s ; Light status: %s ; Status: %s" % (light_sensor_value, dht11_sensor_value ,light_status, status_content))
 
 
 if __name__ == '__main__':

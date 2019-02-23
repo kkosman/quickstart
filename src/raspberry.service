@@ -4,7 +4,7 @@ After=multi-user.target
  
 [Service]
 Type=simple
-ExecStart=/home/pi/quickstart/writetest.py
+ExecStart=/home/pi/quickstart/src/writetest.py
 Restart=always
 RestartSec=3 
 
