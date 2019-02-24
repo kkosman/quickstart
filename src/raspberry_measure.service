@@ -1,10 +1,10 @@
 [Unit]
-Description=Raspberry Write Service
+Description=Raspberry Measure Service
 After=multi-user.target
  
 [Service]
 Type=simple
-ExecStart=/home/pi/quickstart/src/writetest.py
+ExecStart=/home/pi/quickstart/src/measure.py
 Restart=always
 RestartSec=3 
 

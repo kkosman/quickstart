@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from time import sleep
 import sys, getopt, os, json
 
-from sensormodules import relay, sensor_light, sensor_dht11, measure, fourseasons
+from sensormodules import relay, fourseasons
 
 import logging
 logger = False
@@ -27,11 +27,6 @@ relay_in1 = relay.Relay(12) # light
 relay_in2 = relay.Relay(16) # water
 # relay_in3 = Relay(20) # free slot
 # relay_in4 = Relay(21) # free slot
-
-# PIN 18
-sensor_light = sensor_light.Sensor(18) # light / color sensor
-# PIN 17
-sensor_dht11 = sensor_dht11.Sensor(17) # temp / humi sensor
 
 
 config_path = os.path.realpath(__file__)
@@ -60,20 +55,15 @@ def main(argv):
             water_duration = 10 # seconds
 
 
-    if 'SNAP_COMMON' in os.environ:
-        config_path = os.environ['SNAP_DATA']
-        user_data_path = os.environ['SNAP_COMMON']
-        logs_path = os.environ['SNAP_COMMON']
-
     if not logger:
         directory = os.path.dirname(logs_path)
         if not os.path.exists(directory):
             os.makedirs(directory)
 
         logger = logging.getLogger("quickstart")
-        logger.setLevel(logging.DEBUG if debug else logging.ERROR)
+        logger.setLevel(logging.DEBUG if debug else logging.INFO)
         logger_handler = logging.FileHandler(logs_path + "/quickstart.log")
-        logger_handler.setLevel(logging.DEBUG if debug else logging.ERROR)
+        logger_handler.setLevel(logging.DEBUG if debug else logging.INFO)
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         logger_handler.setFormatter(formatter)
         logger.addHandler(logger_handler)
@@ -138,23 +128,7 @@ def main(argv):
     status_file.truncate()
     status_file.close()
 
-
-    ### Light sensor
-#    light_sensor_value = sensor_light.measure()
-    ### Temp / humi sensor
-#    dht11_sensor_value = sensor_dht11.measure()
-
-
-    # update system status
-#    measure_object = measure.Measure( user_data_path = user_data_path, config_path = config_path )
-#    measure_object.date = current_date_time
-#    measure_object.temperature = dht11_sensor_value[0]
-#    measure_object.humidity = dht11_sensor_value[1]
-#    measure_object.light = light_sensor_value
-#    measure_object.store()
-
-
-#    logger.debug("Sensors: %s, %s ; Light status: %s ; Status: %s" % (light_sensor_value, dht11_sensor_value ,light_status, status_content))
+    logger.info(status_content)
 
 
 if __name__ == '__main__':
