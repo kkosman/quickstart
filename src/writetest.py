@@ -5,7 +5,10 @@ from datetime import datetime, timedelta
 from time import sleep
 import sys, getopt, os, json
 
-from sensormodules import relay, fourseasons
+from sensormodules.relay import Relay
+from sensormodules.fourseasons import fourseasons
+
+
 
 import logging
 logger = False
@@ -23,8 +26,8 @@ debug = False
 
 
 # IN 1,2,3,4 -> PIN 12,16,20,21
-relay_in1 = relay.Relay(12) # light
-relay_in2 = relay.Relay(16) # water
+relay_in1 = Relay(12) # light
+relay_in2 = Relay(16) # water
 # relay_in3 = Relay(20) # free slot
 # relay_in4 = Relay(21) # free slot
 
@@ -92,10 +95,14 @@ def main(argv):
     
 
     ### Light status update
-    season = fourseasons.fourseasons(current_date_time)
+    season = fourseasons(current_date_time)
+
+    prev_light_status =  light_status
     light_status = season.is_it_night_or_day()
     # Send status to the relay
-    relay_in1.set(light_status == "day")
+    if prev_light_status != light_status:
+        logger.debug("Light change send")
+        relay_in1.set(light_status == "day")
 
 
     ### Process if we should water
@@ -139,5 +146,8 @@ if __name__ == '__main__':
             sleep(sleep_interval)
             
     except KeyboardInterrupt:
-        logger.info("Stopping...");
+        logger.info("Stopping...")
+
+    finally:
+        Relay.cleanup()
 

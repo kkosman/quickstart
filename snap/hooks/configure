@@ -1,6 +1,0 @@
-#!/bin/sh -e
-
-dbconf="$(snapctl get dbconf)"
-
-# mkdir -m 0600 $SNAP/lib/python3.6/site-packages/src/
-echo "$dbconf" > $SNAP_DATA/db.conf
