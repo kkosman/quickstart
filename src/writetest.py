@@ -99,6 +99,8 @@ def main(argv):
 
     prev_light_status =  light_status
     light_status = season.is_it_night_or_day()
+    logger.debug("It is a " + light_status)
+
     # Send status to the relay
     if prev_light_status != light_status:
         logger.debug("Light change send")
