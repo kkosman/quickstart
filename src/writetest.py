@@ -25,11 +25,8 @@ time_format = "%y/%m/%d %H:%M:%S"
 debug = False
 
 
-# IN 1,2,3,4 -> PIN 12,16,20,21
 relay_in1 = Relay(12) # light
 relay_in2 = Relay(16) # water
-# relay_in3 = Relay(20) # free slot
-# relay_in4 = Relay(21) # free slot
 
 
 config_path = os.path.realpath(__file__)
