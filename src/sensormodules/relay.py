@@ -17,7 +17,7 @@ class Relay:
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
  
-        GPIO.setup(self.__pin, GPIO.OUT, initial = GPIO.LOW, pull_up_down = GPIO.PUD_DOWN)
+        GPIO.setup(self.__pin, GPIO.OUT, initial = GPIO.LOW)
 
     def set(self, on_off):
         if on_off:
