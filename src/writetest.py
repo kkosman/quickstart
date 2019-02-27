@@ -141,7 +141,6 @@ def main(argv):
 if __name__ == '__main__':
 
     try:
-        Relay.cleanup()
         while True:
             main(sys.argv[1:])
             sleep(sleep_interval)
