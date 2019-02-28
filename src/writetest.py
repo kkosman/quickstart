@@ -3,7 +3,10 @@ from __future__ import print_function
 from datetime import datetime, timedelta
 
 from time import sleep
-import sys, getopt, os, json
+import sys, getopt, os, json, subprocess
+
+import urllib.request
+import urllib.parse
 
 from sensormodules.relay import Relay
 from sensormodules.fourseasons import fourseasons
@@ -33,6 +36,8 @@ config_path = os.path.realpath(__file__)
 config_path = os.path.dirname(config_path)
 user_data_path = config_path
 logs_path = config_path + "/logs"
+
+
 
 def main(argv):
     global light_status, pump_status, debug, sleep_interval, pump_interval, night_pump_interval, water_duration , logger, logger_handler, config_path, user_data_path, logs_path
@@ -123,6 +128,35 @@ def main(argv):
         relay_in2.set(True)
         logger.debug("Watering: start %s %s" % (pump_status, current_date_time - timedelta(minutes=interval)))
 
+
+        ### Process light sensor subprocess along with watering
+        logger.debug("Light sensor read start")
+
+        with open(config_path + '/light_sensor_status','r') as file:
+            read = file.read()
+            logger.debug("Previous sensor read: %s" % read)
+            if read != "" and "error" not in read:
+                logger.debug("Send output")
+
+                try:
+                    url = 'https://api.thingspeak.com/update?api_key=HFQUFZZ2ZGMD9CX2' 
+                    # url += "&field1=%s" % dht11_sensor_value[0]
+                    # url += "&field2=%s" % dht11_sensor_value[1]
+                    url += "&field3=%s" % read.split()[-1]
+                    f = urllib.request.urlopen(url)
+
+                    logger.info(f.read().decode('utf-8') + ' @ ' + url)
+                except Exception as e:
+                    logger.error("Exception in GET request. %s" % (e) )
+
+
+
+        command = config_path + '/sensormodules/tsl235r/tsl_read 300000 10'
+        # command = "sleep 60 && echo 'TSL235READ--poll_time--itterations--avg_value--autoscale 300000 10 0.028 17'"
+        with open(config_path + '/light_sensor_status',"wb") as out:
+            subprocess.Popen(command, shell=True, stdout=out, stderr=out)
+        
+
     else: # nothing to do
         logger.debug("Watering: nothing to change")
 
@@ -135,6 +169,9 @@ def main(argv):
     status_file.close()
 
     logger.info(status_content)
+
+
+
 
 
 if __name__ == '__main__':

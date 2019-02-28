@@ -10,3 +10,4 @@ logs
 build
 dist
 quickstart.egg-info
+light_sensor_status
