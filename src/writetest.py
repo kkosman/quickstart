@@ -142,7 +142,7 @@ def main(argv):
                     url = 'https://api.thingspeak.com/update?api_key=HFQUFZZ2ZGMD9CX2' 
                     # url += "&field1=%s" % dht11_sensor_value[0]
                     # url += "&field2=%s" % dht11_sensor_value[1]
-                    url += "&field3=%s" % read.split()[-1]
+                    url += "&field3=%s" % read.split()[-2]
                     f = urllib.request.urlopen(url)
 
                     logger.info(f.read().decode('utf-8') + ' @ ' + url)
