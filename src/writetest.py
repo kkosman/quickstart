@@ -19,6 +19,8 @@ logger_handler = False
 
 
 sleep_interval = 10 # seconds
+sync_interval = 60 * 30 # 15 minutes
+sensor_read_interval = 60 * 5 # 5 minutes
 pump_interval = 5 # minutes
 night_pump_interval = 60 # minutes
 water_duration = 30 # seconds
@@ -40,7 +42,7 @@ logs_path = config_path + "/logs"
 
 
 def main(argv):
-    global light_status, pump_status, debug, sleep_interval, pump_interval, night_pump_interval, water_duration , logger, logger_handler, config_path, user_data_path, logs_path
+    global light_status, pump_status, debug, sleep_interval, sensor_read_interval, sync_interval, pump_interval, night_pump_interval, water_duration , logger, logger_handler, config_path, user_data_path, logs_path
     # first check command line params
     try:
         opts, args = getopt.getopt(argv,"dt",["debug","test"])
@@ -85,7 +87,9 @@ def main(argv):
     except Exception as e:
         status_dict = {
             'is_watering': False,
-            'last_water': (current_date_time - timedelta(minutes=100)).strftime(time_format)
+            'last_water': (current_date_time - timedelta(minutes=100)).strftime(time_format),
+            'last_sync': (current_date_time - timedelta(minutes=100)).strftime(time_format),
+            'last_sensor_read': (current_date_time - timedelta(minutes=100)).strftime(time_format),
         }
 
         status_file = open(user_data_path + '/status.json','w')
@@ -109,28 +113,12 @@ def main(argv):
         relay_in1.set(light_status == "day")
 
 
-    ### Process if we should water
-    pump_status = datetime.strptime(status_dict['last_water'], time_format)
-    if light_status == "day":
-        interval = pump_interval
-    else:
-        interval = night_pump_interval
+    ### Process light sensor subprocess
 
-
-    if status_dict['is_watering'] and pump_status < current_date_time - timedelta(seconds=water_duration): # we should stop watering
-        status_dict['is_watering'] = False
-        relay_in2.set(False)
-        logger.debug("Watering: stop %s %s" % (pump_status, current_date_time - timedelta(seconds=water_duration)))
-
-    elif not status_dict['is_watering'] and pump_status < current_date_time - timedelta(minutes=interval): # we should start watering
-        status_dict['last_water'] = current_date_time.strftime(time_format)
-        status_dict['is_watering'] = True
-        relay_in2.set(True)
-        logger.debug("Watering: start %s %s" % (pump_status, current_date_time - timedelta(minutes=interval)))
-
-
-        ### Process light sensor subprocess along with watering
-        logger.debug("Light sensor read start")
+    last_sync = datetime.strptime(status_dict['last_sync'], time_format)
+    if last_sync < current_date_time - timedelta(seconds=sync_interval):
+        status_dict['last_sync'] = current_date_time.strftime(time_format)
+        logger.debug("Light sensor sychronization")
 
         with open(config_path + '/light_sensor_status','r') as file:
             read = file.read()
@@ -149,16 +137,43 @@ def main(argv):
                 except Exception as e:
                     logger.error("Exception in GET request. %s" % (e) )
 
-
-
+    last_sensor_read = datetime.strptime(status_dict['last_sensor_read'], time_format)
+    if last_sensor_read < current_date_time - timedelta(seconds=sensor_read_interval):
+        status_dict['last_sensor_read'] = current_date_time.strftime(time_format)
+        logger.debug("Light sensor read start")
         command = config_path + '/sensormodules/tsl235r/tsl_read 300000 10'
         # command = "sleep 60 && echo 'TSL235READ--poll_time--itterations--avg_value--autoscale 300000 10 0.028 17'"
         with open(config_path + '/light_sensor_status',"wb") as out:
             subprocess.Popen(command, shell=True, stdout=out, stderr=out)
-        
+
+
+
+    ### Process if we should water
+    pump_status = datetime.strptime(status_dict['last_water'], time_format)
+    if light_status == "day":
+        interval = pump_interval
+    else:
+        interval = night_pump_interval
+
+
+    if status_dict['is_watering'] and pump_status < current_date_time - timedelta(seconds=water_duration): # we should stop watering
+        status_dict['is_watering'] = False
+        relay_in2.set(False)
+        logger.debug("Watering: stop %s %s" % (pump_status, current_date_time - timedelta(seconds=water_duration)))
+
+    elif not status_dict['is_watering'] and pump_status < current_date_time - timedelta(minutes=interval): # we should start watering
+        status_dict['last_water'] = current_date_time.strftime(time_format)
+        status_dict['is_watering'] = True
+        relay_in2.set(True)
+        logger.debug("Watering: start %s %s" % (pump_status, current_date_time - timedelta(minutes=interval)))        
 
     else: # nothing to do
         logger.debug("Watering: nothing to change")
+
+
+
+
+
 
 
 
