@@ -4,7 +4,7 @@
 install python 3 requirements.txt
 install packages: mysql-client
 
-pip install mpld3
+sudo pip3 install mpld3
 
-After installation
-snap set quickstart dbconf=mysql://user:pass@server/dbname
+sudo pip3 install Adafruit_DHT
+sudo pip3 install parse

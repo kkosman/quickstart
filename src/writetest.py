@@ -3,11 +3,13 @@ from __future__ import print_function
 from datetime import datetime, timedelta
 
 from time import sleep
+from parse import parse
 import sys, getopt, os, json, subprocess
 
 import urllib.request
 import urllib.parse
 
+from sensormodules.sensor_dht11 import Sensor
 from sensormodules.relay import Relay
 from sensormodules.fourseasons import fourseasons
 
@@ -118,32 +120,44 @@ def main(argv):
     last_sync = datetime.strptime(status_dict['last_sync'], time_format)
     if last_sync < current_date_time - timedelta(seconds=sync_interval):
         status_dict['last_sync'] = current_date_time.strftime(time_format)
-        logger.debug("Light sensor sychronization")
 
-        with open(config_path + '/light_sensor_status','r') as file:
-            read = file.read()
-            logger.debug("Previous sensor read: %s" % read)
-            if read != "" and "error" not in read:
-                logger.debug("Send output")
+        try:
+            logger.debug("Light sensor sychronization")
+            with open(config_path + '/light_sensor_status','r') as file:
+                read = file.read()
+                logger.debug("Previous sensor read: %s" % read)
+                if read != "" and "error" not in read:
+                    light_sensor_value = read.split()[-2]
 
-                try:
-                    url = 'https://api.thingspeak.com/update?api_key=HFQUFZZ2ZGMD9CX2' 
-                    # url += "&field1=%s" % dht11_sensor_value[0]
-                    # url += "&field2=%s" % dht11_sensor_value[1]
-                    url += "&field3=%s" % read.split()[-2]
-                    f = urllib.request.urlopen(url)
+            logger.debug("Temp, Humidity sensor sychronization")
+            with open(config_path + '/dht_sensor_status','r') as file:
+                read = file.read()
+                logger.debug("Previous sensor read: %s" % read)
+                dht_sensor_value = parse("Temp={} Humidity={}", read)
 
-                    logger.info(f.read().decode('utf-8') + ' @ ' + url)
-                except Exception as e:
-                    logger.error("Exception in GET request. %s" % (e) )
+
+
+            url = 'https://api.thingspeak.com/update?api_key=HFQUFZZ2ZGMD9CX2' 
+            url += "&field1=%s" % dht_sensor_value[0]
+            url += "&field2=%s" % dht_sensor_value[1]
+            url += "&field3=%s" % light_sensor_value
+            f = urllib.request.urlopen(url)
+            logger.info(f.read().decode('utf-8') + ' @ ' + url)
+        except Exception as e:
+            logger.error("Exception in synch request. %s" % (e) )
 
     last_sensor_read = datetime.strptime(status_dict['last_sensor_read'], time_format)
     if last_sensor_read < current_date_time - timedelta(seconds=sensor_read_interval):
         status_dict['last_sensor_read'] = current_date_time.strftime(time_format)
-        logger.debug("Light sensor read start")
+        logger.debug("Sensors read start")
         command = config_path + '/sensormodules/tsl235r/tsl_read 300000 10'
         # command = "sleep 60 && echo 'TSL235READ--poll_time--itterations--avg_value--autoscale 300000 10 0.028 17'"
         with open(config_path + '/light_sensor_status',"wb") as out:
+            subprocess.Popen(command, shell=True, stdout=out, stderr=out)
+
+
+        command = config_path + '/sensormodules/dht11_read.py'
+        with open(config_path + '/dht_sensor_status',"wb") as out:
             subprocess.Popen(command, shell=True, stdout=out, stderr=out)
 
 

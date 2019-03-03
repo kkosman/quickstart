@@ -11,3 +11,4 @@ build
 dist
 quickstart.egg-info
 light_sensor_status
+dht_sensor_status
