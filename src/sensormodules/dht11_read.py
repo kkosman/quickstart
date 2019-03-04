@@ -21,6 +21,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import os
+import numpy
+
+def find_mean_value(arr):
+    elements = numpy.array(arr)
+
+    mean = numpy.mean(elements, axis=0)
+    sd = numpy.std(elements, axis=0)
+
+    final_list = [x for x in arr if (x > mean - 1 * sd)]
+    final_list = [x for x in final_list if (x < mean + 1 * sd)]
+
+    mean = numpy.mean(final_list, axis=0)
+    return mean
 
 try:
     import Adafruit_DHT
@@ -36,15 +49,28 @@ try:
     # Example using a Raspberry Pi with DHT sensor
     # connected to GPIO23.
     pin = 17
+    humidity = []
+    temperature = []
 
-    # Try to grab a sensor reading.  Use the read_retry method which will retry up
-    # to 15 times to get a sensor reading (waiting 2 seconds between each retry).
-    humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
+    x = 0
+    while x < 6:
 
-    # Note that sometimes you won't get a reading and
-    # the results will be null (because Linux can't
-    # guarantee the timing of calls to read the sensor).
-    # If this happens try again!
+        # Try to grab a sensor reading.  Use the read_retry method which will retry up
+        # to 15 times to get a sensor reading (waiting 2 seconds between each retry).
+        h, t = Adafruit_DHT.read_retry(sensor, pin)
+
+        humidity += [h]
+        temperature += [t]
+
+        # Note that sometimes you won't get a reading and
+        # the results will be null (because Linux can't
+        # guarantee the timing of calls to read the sensor).
+        # If this happens try again!
+        x += 1
+
+    humidity = find_mean_value(humidity)
+    temperature = find_mean_value(temperature)
+
 
 except:
     humidity, temperature = 15, 80
