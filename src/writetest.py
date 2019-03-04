@@ -123,6 +123,7 @@ def main(argv):
 
         try:
             logger.debug("Light sensor sychronization")
+            light_sensor_value = 0
             with open(config_path + '/light_sensor_status','r') as file:
                 read = file.read()
                 logger.debug("Previous sensor read: %s" % read)
@@ -130,6 +131,7 @@ def main(argv):
                     light_sensor_value = read.split()[-2]
 
             logger.debug("Temp, Humidity sensor sychronization")
+            dht_sensor_value = [0,0]
             with open(config_path + '/dht_sensor_status','r') as file:
                 read = file.read()
                 logger.debug("Previous sensor read: %s" % read)
