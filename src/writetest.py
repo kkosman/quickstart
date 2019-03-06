@@ -21,8 +21,8 @@ logger_handler = False
 
 
 sleep_interval = 10 # seconds
-sync_interval = 60 * 30 # 15 minutes
-sensor_read_interval = 60 * 5 # 5 minutes
+sync_interval = 60 * 30 # 30 minutes
+sensor_read_interval = 60 * 10 # 5 minutes
 pump_interval = 5 # minutes
 night_pump_interval = 60 # minutes
 water_duration = 30 # seconds
@@ -134,9 +134,9 @@ def main(argv):
             dht_sensor_value = [0,0]
             with open(config_path + '/dht_sensor_status','r') as file:
                 read = file.read()
-                logger.debug("Previous sensor read: %s" % read)
+                logger.info("Previous sensor read: %s" % read)
                 dht_sensor_value = parse("Temp={} Humidity={}", read)
-
+                logger.info(dht_sensor_value)
 
 
             url = 'https://api.thingspeak.com/update?api_key=HFQUFZZ2ZGMD9CX2' 
@@ -146,7 +146,9 @@ def main(argv):
             f = urllib.request.urlopen(url)
             logger.info(f.read().decode('utf-8') + ' @ ' + url)
         except Exception as e:
-            logger.error("Exception in synch request. %s" % (e) )
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            logger.error("Exception in synch request. %s LINE %s" % (e,exc_tb.tb_lineno) )
+
 
     last_sensor_read = datetime.strptime(status_dict['last_sensor_read'], time_format)
     if last_sensor_read < current_date_time - timedelta(seconds=sensor_read_interval):
@@ -158,7 +160,7 @@ def main(argv):
             subprocess.Popen(command, shell=True, stdout=out, stderr=out)
 
 
-        command = config_path + '/sensormodules/dht11_read.py'
+        command = 'sleep 60 && ' + config_path + '/sensormodules/dht11_read.py'
         with open(config_path + '/dht_sensor_status',"wb") as out:
             subprocess.Popen(command, shell=True, stdout=out, stderr=out)
 

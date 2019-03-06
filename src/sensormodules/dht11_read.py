@@ -20,7 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import os
+import os, sys, time
 import numpy
 
 def find_mean_value(arr):
@@ -49,31 +49,30 @@ try:
     # Example using a Raspberry Pi with DHT sensor
     # connected to GPIO23.
     pin = 17
-    humidity = []
-    temperature = []
 
     x = 0
-    while x < 6:
-
+    while True:
+        x += 1
+        
         # Try to grab a sensor reading.  Use the read_retry method which will retry up
         # to 15 times to get a sensor reading (waiting 2 seconds between each retry).
-        h, t = Adafruit_DHT.read_retry(sensor, pin)
+        humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
 
-        humidity += [h]
-        temperature += [t]
 
         # Note that sometimes you won't get a reading and
         # the results will be null (because Linux can't
         # guarantee the timing of calls to read the sensor).
         # If this happens try again!
-        x += 1
+        if x < 5 and (not humidity or humidity > 100):
+            time.sleep(10)
+        else: 
+            break
 
-    humidity = find_mean_value(humidity)
-    temperature = find_mean_value(temperature)
+except Exception as e:
+    humidity, temperature = 80, 15
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    print("Exception in synch request. %s LINE %s" % (e,exc_tb.tb_lineno) )
 
-
-except:
-    humidity, temperature = 15, 80
 
 finally:
 
