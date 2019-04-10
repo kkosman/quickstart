@@ -12,7 +12,7 @@ class fourseasons():
 
 	def __init__(self, current_date):
 		self.current_date = current_date
-		self.start_date = datetime.strptime("18/05/01 09:00:00", self.time_format)
+		self.start_date = datetime.strptime("19/05/01 09:00:00", self.time_format)
 		self.start_month = self.start_date.month
 		# start_date = datetime.strptime("18/11/10 00:00:00", time_format)
 
@@ -43,9 +43,12 @@ class fourseasons():
 		
 		return duration
 
-	def is_it_night_or_day(self):
-		daylength = self.get_daylength()
-		current_hour = ( ( self.current_date.hour + ( self.current_date.minute / 60.0 ) ) / 24.0 ) * self.day_length
-		day_or_night = "night" if current_hour >= daylength else "day"
+	def is_it_night_or_day(self, simple=False):
+		if simple:
+			day_or_night = "night" if self.current_date.hour >= 15.0 else "day"
+		else:	
+			daylength = self.get_daylength()
+			current_hour = ( ( self.current_date.hour + ( self.current_date.minute / 60.0 ) ) / 24.0 ) * self.day_length
+			day_or_night = "night" if current_hour >= daylength else "day"
 
 		return day_or_night

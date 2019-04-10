@@ -15,7 +15,7 @@ while x < 10:
 	season = fourseasons(current_date_time)
 	today = season.get_today()
 	day_length = season.get_daylength()
-	light_status = season.is_it_night_or_day()
+	light_status = season.is_it_night_or_day(simple=True)
 	results.append([current_date_time,light_status,today, day_length])
 	x+=1
 
