@@ -129,19 +129,19 @@ def main(argv):
                 logger.debug("Previous sensor read: %s" % read)
                 if read != "" and "error" not in read:
                     light_sensor_value = read.split()[-2]
-
-            logger.debug("Temp, Humidity sensor sychronization")
-            dht_sensor_value = [0,0]
-            with open(config_path + '/dht_sensor_status','r') as file:
-                read = file.read()
-                logger.info("Previous sensor read: %s" % read)
-                dht_sensor_value = parse("Temp={} Humidity={}", read)
-                logger.info(dht_sensor_value)
-
+#
+#            logger.debug("Temp, Humidity sensor sychronization")
+#            dht_sensor_value = [0,0]
+#            with open(config_path + '/dht_sensor_status','r') as file:
+#                read = file.read()
+#                logger.info("Previous sensor read: %s" % read)
+#                dht_sensor_value = parse("Temp={} Humidity={}", read)
+#                logger.info(dht_sensor_value)
+#
 
             url = 'https://api.thingspeak.com/update?api_key=HFQUFZZ2ZGMD9CX2' 
-            url += "&field1=%s" % dht_sensor_value[0]
-            url += "&field2=%s" % dht_sensor_value[1]
+#           url += "&field1=%s" % dht_sensor_value[0]
+#           url += "&field2=%s" % dht_sensor_value[1]
             url += "&field3=%s" % light_sensor_value
             f = urllib.request.urlopen(url)
             logger.info(f.read().decode('utf-8') + ' @ ' + url)
@@ -160,9 +160,9 @@ def main(argv):
             subprocess.Popen(command, shell=True, stdout=out, stderr=out)
 
 
-        command = 'sleep 60 && ' + config_path + '/sensormodules/dht11_read.py'
-        with open(config_path + '/dht_sensor_status',"wb") as out:
-            subprocess.Popen(command, shell=True, stdout=out, stderr=out)
+#        command = 'sleep 60 && ' + config_path + '/sensormodules/dht11_read.py'
+#        with open(config_path + '/dht_sensor_status',"wb") as out:
+#            subprocess.Popen(command, shell=True, stdout=out, stderr=out)
 
 
 
