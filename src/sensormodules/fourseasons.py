@@ -45,7 +45,7 @@ class fourseasons():
 
 	def is_it_night_or_day(self, simple=False):
 		if simple:
-			day_or_night = "night" if self.current_date.hour >= 15.0 else "day"
+			day_or_night = "night" if self.current_date.hour >= 18.0 else "day"
 		else:	
 			daylength = self.get_daylength()
 			current_hour = ( ( self.current_date.hour + ( self.current_date.minute / 60.0 ) ) / 24.0 ) * self.day_length
