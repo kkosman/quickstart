@@ -14,6 +14,7 @@ import logging
 logger = False
 logger_handler = False
 
+sleep_interval = 60 * 15 # 15 minutes
 time_format = "%y/%m/%d %H:%M:%S"
 debug = False
 
@@ -68,33 +69,25 @@ def main(argv):
     )
 
 
-    regex = re.compile(r"(.*)\s(.*)\s(.*)")
 
     while 1:
        result = ser.readline()
        if len(result) > 0:
-           print(result)
-           result = rx.match(result).groups()
-           print(float(result[0]))
-           print(float(result[1]))
-           print(float(result[2]))
+           result = result.decode('utf-8')
+           res = re.findall("(\d{,4}\.?\d{1,})", result)
            break
-       else:
-            print("retry")
-
-    
 
 
-    # try:
-    #     url = 'https://api.thingspeak.com/update?api_key=HFQUFZZ2ZGMD9CX2' 
-    #     url += "&field1=%s" % dht11_sensor_value[0]
-    #     url += "&field2=%s" % dht11_sensor_value[1]
-    #     url += "&field3=%s" % light_sensor_value
-    #     # f = urllib.request.urlopen(url)
+    try:
+        url = 'https://api.thingspeak.com/update?api_key=HFQUFZZ2ZGMD9CX2' 
+        url += "&field1=%s" % res[1] # temp
+        url += "&field2=%s" % res[0] # humi
+        url += "&field3=%s" % res[2] # light
+        f = urllib.request.urlopen(url)
 
-    #     logger.info(f.read().decode('utf-8') + ' @ ' + url)
-    # except Exception as e:
-    #     logger.error("Exception in GET request. %s" % (e) )
+        logger.info(f.read().decode('utf-8') + ' @ ' + url)
+    except Exception as e:
+        logger.error("Exception in GET request. %s" % (e) )
 
 
 if __name__ == '__main__':
