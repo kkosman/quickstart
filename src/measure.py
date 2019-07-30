@@ -8,22 +8,14 @@ import sys, getopt, os, json
 import urllib.request
 import urllib.parse
 
-from sensormodules import sensor_light, sensor_dht11
+import serial, re
 
 import logging
 logger = False
 logger_handler = False
 
-sleep_interval = 60 * 15 # 15 minutes
 time_format = "%y/%m/%d %H:%M:%S"
 debug = False
-
-
-# PIN 18
-sensor_light = sensor_light.Sensor(18) # light / color sensor
-# PIN 17
-sensor_dht11 = sensor_dht11.Sensor(17) # temp / humi sensor
-
 
 config_path = os.path.realpath(__file__)
 config_path = os.path.dirname(config_path)
@@ -65,23 +57,44 @@ def main(argv):
     current_date_time = datetime.now()
 
 
+    ser = serial.Serial(
+      
+       port='/dev/ttyUSB0',
+       baudrate = 9600,
+       parity=serial.PARITY_NONE,
+       stopbits=serial.STOPBITS_ONE,
+       bytesize=serial.EIGHTBITS,
+       timeout=1
+    )
 
-    ### Light sensor
-    light_sensor_value = sensor_light.measure()
-    ### Temp / humi sensor
-    dht11_sensor_value = sensor_dht11.measure()
+
+    regex = re.compile(r"(.*)\s(.*)\s(.*)")
+
+    while 1:
+       result = ser.readline()
+       if len(result) > 0:
+           print(result)
+           result = rx.match(result).groups()
+           print(float(result[0]))
+           print(float(result[1]))
+           print(float(result[2]))
+           break
+       else:
+            print("retry")
+
+    
 
 
-    try:
-        url = 'https://api.thingspeak.com/update?api_key=HFQUFZZ2ZGMD9CX2' 
-        url += "&field1=%s" % dht11_sensor_value[0]
-        url += "&field2=%s" % dht11_sensor_value[1]
-        url += "&field3=%s" % light_sensor_value
-        f = urllib.request.urlopen(url)
+    # try:
+    #     url = 'https://api.thingspeak.com/update?api_key=HFQUFZZ2ZGMD9CX2' 
+    #     url += "&field1=%s" % dht11_sensor_value[0]
+    #     url += "&field2=%s" % dht11_sensor_value[1]
+    #     url += "&field3=%s" % light_sensor_value
+    #     # f = urllib.request.urlopen(url)
 
-        logger.info(f.read().decode('utf-8') + ' @ ' + url)
-    except Exception as e:
-        logger.error("Exception in GET request. %s" % (e) )
+    #     logger.info(f.read().decode('utf-8') + ' @ ' + url)
+    # except Exception as e:
+    #     logger.error("Exception in GET request. %s" % (e) )
 
 
 if __name__ == '__main__':
