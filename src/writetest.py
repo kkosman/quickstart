@@ -139,12 +139,12 @@ def main(argv):
 #                logger.info(dht_sensor_value)
 #
 
-            url = 'https://api.thingspeak.com/update?api_key=HFQUFZZ2ZGMD9CX2' 
+#           url = 'https://api.thingspeak.com/update?api_key=HFQUFZZ2ZGMD9CX2' 
 #           url += "&field1=%s" % dht_sensor_value[0]
 #           url += "&field2=%s" % dht_sensor_value[1]
-            url += "&field3=%s" % light_sensor_value
-            f = urllib.request.urlopen(url)
-            logger.info(f.read().decode('utf-8') + ' @ ' + url)
+#            url += "&field3=%s" % light_sensor_value
+#            f = urllib.request.urlopen(url)
+#            logger.info(f.read().decode('utf-8') + ' @ ' + url)
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             logger.error("Exception in synch request. %s LINE %s" % (e,exc_tb.tb_lineno) )
