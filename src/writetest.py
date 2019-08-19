@@ -20,12 +20,12 @@ logger = False
 logger_handler = False
 
 
-sleep_interval = 10 # seconds
+sleep_interval = 5 # seconds
 sync_interval = 60 * 30 # 30 minutes
 sensor_read_interval = 60 * 10 # 5 minutes
 pump_interval = 5 # minutes
 night_pump_interval = 5 # minutes
-water_duration = 10 # seconds
+water_duration = 5 # seconds
 light_status = 'off'
 pump_status = 'off'
 time_format = "%y/%m/%d %H:%M:%S"
